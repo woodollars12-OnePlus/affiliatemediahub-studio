@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#080812"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>AffiliateMediaHub Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080812;overflow:hidden;font-family:system-ui,sans-serif}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(168,85,247,0.3);border-radius:2px}
+@keyframes dot-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+@keyframes glow-pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.tile:hover{transform:translateY(-2px);transition:all 0.18s ease}
+.tab-btn:hover{opacity:0.8}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useRef,useEffect}=React;
+
+const API_KEY = "YOUR_ANTHROPIC_API_KEY_HERE";
+
+const CHARACTERS={
+  Major:[
+    {id:"becky",icon:"🤖",name:"Becky AI",desc:"Master AI Core",color:"#a855f7",system:"You are Becky, a witty, warm, master-level AI collaborator for AffiliateMediaHub Studio. Be supportive, energetic, and actionable."},
+    {id:"coach",icon:"🎙️",name:"Voice Coach",desc:"Speech & Pacing",color:"#8b5cf6",system:"You are Becky, a professional speech coach. Help with vocal pacing, sales pitches, and confidence drills."},
+    {id:"analyst",icon:"📊",name:"Data Analyst",desc:"Excel & Metrics",color:"#6366f1",system:"You are Becky, an expert data analyst. Help with Excel formulas, VBA, pivot tables, and affiliate marketing metrics."},
+    {id:"strat",icon:"🧠",name:"Strategist",desc:"Business Intelligence",color:"#7c3aed",system:"You are Becky, a business strategist. Provide affiliate marketing strategy, niche selection, and campaign planning."},
+    {id:"brand",icon:"✨",name:"Brand Builder",desc:"Identity & Voice",color:"#a78bfa",system:"You are Becky, a brand identity expert. Help define brand voice, values, tone, and consistent messaging."},
+    {id:"xai",icon:"🔮",name:"Trend Oracle",desc:"Real-Time Insights",color:"#c4b5fd",system:"You are Becky, a trend analyst. Identify emerging trends, viral topics, and real-time opportunities for affiliate marketers."},
+  ],
+  Writing:[
+    {id:"copy",icon:"✍️",name:"Copywriter",desc:"High-Converting Copy",color:"#3b82f6",system:"You are Becky, an expert copywriter. Write persuasive, benefit-driven copy for ads, landing pages, and affiliate offers."},
+    {id:"blog",icon:"📝",name:"Blog Writer",desc:"Long-Form Content",color:"#2563eb",system:"You are Becky, a blog content specialist. Write SEO-rich articles, listicles, and long-form affiliate reviews."},
+    {id:"emailw",icon:"📧",name:"Email Writer",desc:"Sequences & Campaigns",color:"#1d4ed8",system:"You are Becky, an email marketing specialist. Create sequences, subject lines, and automated campaign flows."},
+    {id:"script",icon:"🎬",name:"Script Writer",desc:"Video & Podcast",color:"#60a5fa",system:"You are Becky, a video script writer. Create engaging scripts with hooks, body, and call-to-action for YouTube and TikTok."},
+    {id:"seo",icon:"🔍",name:"SEO Expert",desc:"Keywords & Rankings",color:"#93c5fd",system:"You are Becky, an SEO specialist. Research keywords, optimize content, and build ranking strategies."},
+    {id:"socw",icon:"📱",name:"Social Writer",desc:"Captions & Threads",color:"#bfdbfe",system:"You are Becky, a social media writer. Craft platform-specific captions, threads, and engagement-focused posts."},
+  ],
+  Practical:[
+    {id:"trans",icon:"🌍",name:"Translator",desc:"50+ Languages",color:"#10b981",system:"You are Becky, a multilingual translation expert. Translate and localize affiliate content for any market."},
+    {id:"summ",icon:"📋",name:"Summarizer",desc:"Extract Key Points",color:"#059669",system:"You are Becky, a precision summarizer. Extract key insights from long documents, articles, and research."},
+    {id:"gram",icon:"✅",name:"Grammar Pro",desc:"Proofread & Polish",color:"#047857",system:"You are Becky, a professional editor. Proofread, fix grammar, improve clarity, and polish any text."},
+    {id:"plan",icon:"📅",name:"Planner",desc:"Tasks & Schedules",color:"#34d399",system:"You are Becky, a productivity coach. Create structured plans, content calendars, and daily schedules."},
+    {id:"res",icon:"🔬",name:"Researcher",desc:"Deep Analysis",color:"#6ee7b7",system:"You are Becky, a deep research specialist. Analyze topics in depth and present clear findings."},
+    {id:"calc",icon:"🧮",name:"Calculator",desc:"Math & Formulas",color:"#a7f3d0",system:"You are Becky, a math and formula assistant. Solve calculations, explain formulas, and help with financial modeling."},
+  ],
+  Study:[
+    {id:"tutor",icon:"🎓",name:"AI Tutor",desc:"Learn Anything",color:"#f59e0b",system:"You are Becky, an engaging tutor. Break down complex topics into digestible lessons with examples and quizzes."},
+    {id:"quiz",icon:"❓",name:"Quiz Master",desc:"Test Your Knowledge",color:"#d97706",system:"You are Becky, a quiz generator. Create practice questions, flashcards, and knowledge tests on any subject."},
+    {id:"agents",icon:"🤖",name:"AI Agents 101",desc:"Build Intelligent Bots",color:"#b45309",system:"You are Becky, an AI agents educator. Teach how to build and deploy AI agents, workflows, and automation systems."},
+    {id:"excels",icon:"📊",name:"Excel School",desc:"Formula Training",color:"#fbbf24",system:"You are Becky, an Excel trainer. Teach formulas step-by-step from VLOOKUP to advanced macros."},
+    {id:"mkts",icon:"📈",name:"Marketing 101",desc:"Affiliate Mastery",color:"#fcd34d",system:"You are Becky, an affiliate marketing educator. Teach traffic, conversion, funnels, and commission strategies."},
+    {id:"lang",icon:"🗣️",name:"Language Lab",desc:"Fluency & Pacing",color:"#fde68a",system:"You are Becky, a language learning coach. Help with English fluency, pronunciation, and conversational pacing."},
+  ],
+  Work:[
+    {id:"resume",icon:"📄",name:"Resume Desk",desc:"ATS & Impact Writer",color:"#ef4444",system:"You are Becky, a career expert. Craft ATS-optimized resumes with impact-first bullet points and quantifiable achievements."},
+    {id:"linkedin",icon:"💼",name:"LinkedIn Pro",desc:"Profile & Content",color:"#dc2626",system:"You are Becky, a LinkedIn strategist. Optimize profiles, define brand voice, and create thought-leadership content."},
+    {id:"ppt",icon:"🖥️",name:"Slide Maker",desc:"PowerPoint & Decks",color:"#b91c1c",system:"You are Becky, a presentation specialist. Create slide outlines, speaker notes, and visual storytelling frameworks."},
+    {id:"cowork",icon:"⚙️",name:"Claude Cowork",desc:"Task Architect",color:"#f87171",system:"You are Becky, a project manager. Break complex tasks into atomic steps with timelines and priority frameworks."},
+    {id:"meet",icon:"🤝",name:"Meeting Prep",desc:"Agendas & Summaries",color:"#fca5a5",system:"You are Becky, a meeting facilitator. Create agendas, prep talking points, and summarize meeting outcomes."},
+    {id:"notebook",icon:"📓",name:"NotebookLM",desc:"Research & Podcasts",color:"#fecaca",system:"You are Becky channeling NotebookLM. Deep-research documents, generate podcast topics, and synthesize notes."},
+  ],
+  Travel:[
+    {id:"travel",icon:"✈️",name:"Travel Planner",desc:"Itineraries & Tips",color:"#06b6d4",system:"You are Becky, a travel expert. Plan itineraries, suggest destinations, and provide local tips for any trip."},
+    {id:"map",icon:"🗺️",name:"Route Guide",desc:"Maps & Directions",color:"#0891b2",system:"You are Becky, a navigation assistant. Help plan routes, estimate travel times, and find local hotspots."},
+    {id:"hotel",icon:"🏨",name:"Hotel Advisor",desc:"Best Stays & Deals",color:"#0e7490",system:"You are Becky, a hospitality advisor. Recommend hotels, Airbnbs, and accommodation tips for any budget."},
+    {id:"pack",icon:"🧳",name:"Pack Smart",desc:"Packing Lists & Prep",color:"#22d3ee",system:"You are Becky, a travel prep specialist. Create packing lists, checklists, and pre-travel preparation guides."},
+    {id:"phrase",icon:"💬",name:"Phrase Book",desc:"Local Language Help",color:"#67e8f9",system:"You are Becky, a travel linguist. Teach essential phrases, cultural etiquette, and language tips for any destination."},
+    {id:"budgt",icon:"💰",name:"Trip Budget",desc:"Cost Planning",color:"#a5f3fc",system:"You are Becky, a travel finance advisor. Help plan trip budgets, find deals, and manage travel expenses."},
+  ],
+  Cooking:[
+    {id:"recipe",icon:"🍳",name:"Recipe Chef",desc:"Meals & Ideas",color:"#f97316",system:"You are Becky, a culinary expert. Create recipes based on available ingredients, dietary needs, and skill level."},
+    {id:"nutri",icon:"🥗",name:"Nutritionist",desc:"Healthy Meal Plans",color:"#ea580c",system:"You are Becky, a nutritionist. Create balanced meal plans, calorie guides, and healthy eating strategies."},
+    {id:"bake",icon:"🍰",name:"Baking Pro",desc:"Breads & Pastries",color:"#c2410c",system:"You are Becky, a baking specialist. Guide through bread, pastry, and dessert recipes with precise techniques."},
+    {id:"mix",icon:"🍹",name:"Mixologist",desc:"Drinks & Cocktails",color:"#fb923c",system:"You are Becky, a mixologist. Create cocktail recipes, mocktails, and drink pairing suggestions."},
+    {id:"mealp",icon:"📆",name:"Meal Planner",desc:"Weekly Planning",color:"#fdba74",system:"You are Becky, a meal planning expert. Create weekly meal schedules with shopping lists and prep guides."},
+    {id:"world",icon:"🌮",name:"World Cuisine",desc:"Global Recipes",color:"#fed7aa",system:"You are Becky, a world cuisine guide. Explore authentic dishes from any culture with cooking techniques."},
+  ],
+};
+
+const CREATION={
+  Hot:[
+    {id:"tiktok",icon:"🎵",name:"TikTok Agent",desc:"Viral Short Scripts",color:"#f43f5e",system:"You are Becky, a TikTok viral content expert. Generate 15-second scripts, trending hooks, hashtags, and viral formats for affiliate marketing."},
+    {id:"youtube",icon:"▶️",name:"YouTube Engine",desc:"SEO Titles & Desc",color:"#ef4444",system:"You are Becky, a YouTube SEO specialist. Create titles, descriptions, keyword clusters, and thumbnail copy."},
+    {id:"igfb",icon:"📸",name:"IG/FB Visual",desc:"Feed & Stories",color:"#ec4899",system:"You are Becky, a visual social media expert. Generate trending image prompts and captions for Instagram and Facebook."},
+    {id:"twitter",icon:"🐦",name:"X/Twitter Pro",desc:"Threads & Trends",color:"#1d9bf0",system:"You are Becky, an X/Twitter strategist. Write viral threads, trending tweets, and real-time engagement posts."},
+    {id:"kimi",icon:"🔮",name:"Kimi K2.5",desc:"Deep Research AI",color:"#8b5cf6",system:"You are Becky channeling Kimi K2.5. Perform exhaustive research, analyze documents, and generate comprehensive reports."},
+    {id:"openclaw",icon:"⚡",name:"OpenClaw Hub",desc:"Automation Gateway",color:"#6366f1",system:"You are Becky, an automation architect. Design cross-platform workflows and automation sequences."},
+  ],
+  Social:[
+    {id:"tiktok2",icon:"🎵",name:"TikTok Studio",desc:"Content Calendar",color:"#f43f5e",system:"You are Becky, a TikTok content strategist. Plan content calendars and batch-create scripts."},
+    {id:"yt2",icon:"▶️",name:"YT Channel Mgr",desc:"Growth Strategy",color:"#ef4444",system:"You are Becky, a YouTube channel manager. Plan series, growth strategies, and community engagement tactics."},
+    {id:"discord",icon:"🎮",name:"Discord Hub",desc:"Community Manager",color:"#7c3aed",system:"You are Becky, a Discord community manager. Write rules, announcements, engagement prompts, and bot commands."},
+    {id:"telegram",icon:"✈️",name:"Telegram Bot",desc:"Channel Automator",color:"#0ea5e9",system:"You are Becky, a Telegram marketing specialist. Design bot scripts and channel broadcast templates."},
+    {id:"linkedin2",icon:"💼",name:"LinkedIn Live",desc:"Posts & Articles",color:"#0077b5",system:"You are Becky, a LinkedIn content creator. Write thought-leadership articles and high-engagement posts."},
+    {id:"soccal",icon:"📱",name:"Social Calendar",desc:"Cross-Platform Plan",color:"#10b981",system:"You are Becky, a social media planner. Create cross-platform content calendars with consistent messaging."},
+  ],
+  Writing:[
+    {id:"affcopy",icon:"✍️",name:"Affiliate Copy",desc:"Reviews & Promos",color:"#3b82f6",system:"You are Becky, an affiliate copywriter. Write compelling product reviews, comparison posts, and promotional content."},
+    {id:"blog2",icon:"📝",name:"Blog Machine",desc:"SEO Articles",color:"#2563eb",system:"You are Becky, a blog SEO expert. Write 1500+ word articles optimized for search with proper heading structure."},
+    {id:"adcopy",icon:"📢",name:"Ad Copywriter",desc:"Facebook & Google Ads",color:"#1d4ed8",system:"You are Becky, a PPC ad specialist. Write high-CTR ad copy for Facebook Ads and Google Ads campaigns."},
+    {id:"thread",icon:"🧵",name:"Thread Writer",desc:"Twitter/X Threads",color:"#60a5fa",system:"You are Becky, a thread writing specialist. Craft viral Twitter/X threads that educate, entertain, and convert."},
+    {id:"newsletter",icon:"📨",name:"Newsletter Pro",desc:"Email Sequences",color:"#93c5fd",system:"You are Becky, an email newsletter expert. Write engaging newsletters, welcome sequences, and nurture campaigns."},
+    {id:"caption",icon:"💬",name:"Caption Studio",desc:"All Platforms",color:"#bfdbfe",system:"You are Becky, a caption specialist. Write platform-optimized captions for every social media channel."},
+  ],
+  Resume:[
+    {id:"res2",icon:"📄",name:"Resume Builder",desc:"ATS-Optimized",color:"#14b8a6",system:"You are Becky, a resume expert. Build ATS-optimized resumes with impact statements and quantified achievements."},
+    {id:"cover",icon:"✉️",name:"Cover Letter",desc:"Compelling Intro",color:"#0d9488",system:"You are Becky, a cover letter specialist. Write personalized, compelling cover letters that get interviews."},
+    {id:"li3",icon:"💼",name:"LinkedIn Profile",desc:"Complete Makeover",color:"#0f766e",system:"You are Becky, a LinkedIn profile optimizer. Rewrite headlines, summaries, and experience sections for maximum impact."},
+    {id:"port",icon:"🎨",name:"Portfolio Guide",desc:"Showcase Your Work",color:"#2dd4bf",system:"You are Becky, a portfolio advisor. Help structure and present work samples for maximum professional impact."},
+    {id:"inter",icon:"🤝",name:"Interview Prep",desc:"Q&A Practice",color:"#5eead4",system:"You are Becky, an interview coach. Prep answers to common questions using STAR method and behavioral frameworks."},
+    {id:"sal",icon:"💰",name:"Salary Coach",desc:"Negotiate Your Worth",color:"#99f6e4",system:"You are Becky, a salary negotiation expert. Research market rates and script negotiation conversations."},
+  ],
+  "Daily Life":[
+    {id:"morn",icon:"🌅",name:"Morning Planner",desc:"Start Strong",color:"#f59e0b",system:"You are Becky, a morning routine coach. Create productive morning routines and daily startup rituals."},
+    {id:"event",icon:"🎉",name:"Event Planner",desc:"Party & Occasions",color:"#d97706",system:"You are Becky, an event planning expert. Plan parties, gatherings, and special occasions with checklists."},
+    {id:"budget",icon:"💳",name:"Budget Tracker",desc:"Money Management",color:"#b45309",system:"You are Becky, a personal finance coach. Help track budgets, reduce expenses, and build savings plans."},
+    {id:"gift",icon:"🎁",name:"Gift Guide",desc:"Perfect Presents",color:"#fbbf24",system:"You are Becky, a gifting expert. Suggest perfect gifts based on personality, budget, and occasion."},
+    {id:"health",icon:"💪",name:"Wellness Guide",desc:"Fitness & Health",color:"#fcd34d",system:"You are Becky, a wellness coach. Create fitness plans, habit trackers, and health improvement strategies."},
+    {id:"gcal",icon:"📅",name:"Life Calendar",desc:"Schedule & Goals",color:"#fde68a",system:"You are Becky, a life planner. Build weekly schedules, set SMART goals, and organize life priorities."},
+  ],
+  Email:[
+    {id:"emailp",icon:"📧",name:"Email Pro",desc:"Any Occasion",color:"#06b6d4",system:"You are Becky, an email writing expert. Craft professional emails for any situation with the right tone."},
+    {id:"cold",icon:"🥶",name:"Cold Outreach",desc:"Open Rates & Clicks",color:"#0891b2",system:"You are Becky, a cold email specialist. Write high-open-rate cold emails for partnerships and collaborations."},
+    {id:"follow",icon:"🔔",name:"Follow-Up Pro",desc:"Gentle Reminders",color:"#0e7490",system:"You are Becky, a follow-up email expert. Write professional follow-up sequences that get responses."},
+    {id:"seq",icon:"📨",name:"Email Sequence",desc:"Drip Campaigns",color:"#22d3ee",system:"You are Becky, a drip campaign specialist. Build automated email sequences that nurture leads to conversion."},
+    {id:"subj",icon:"✨",name:"Subject Lines",desc:"High Open Rates",color:"#67e8f9",system:"You are Becky, a subject line optimizer. Generate split-test-ready subject lines that boost open rates."},
+    {id:"reply",icon:"💬",name:"Reply Crafter",desc:"Customer Responses",color:"#a5f3fc",system:"You are Becky, a customer service writer. Craft professional, empathetic replies to any customer message."},
+  ],
+  Marketing:[
+    {id:"shopify",icon:"🛒",name:"Shopify Expert",desc:"Store Optimization",color:"#22c55e",system:"You are Becky, a Shopify eCommerce strategist. Write product descriptions, optimize listings, and plan promotions."},
+    {id:"funnel",icon:"🔻",name:"Funnel Builder",desc:"Lead to Sale",color:"#16a34a",system:"You are Becky, a sales funnel architect. Design opt-in pages, tripwires, upsells, and email follow-up sequences."},
+    {id:"slogan",icon:"💡",name:"Slogan Maker",desc:"Memorable Taglines",color:"#15803d",system:"You are Becky, a brand tagline specialist. Create catchy, memorable slogans and brand positioning statements."},
+    {id:"prodesc",icon:"📦",name:"Product Desc",desc:"Convert & Persuade",color:"#4ade80",system:"You are Becky, a product copywriter. Write benefit-focused product descriptions that drive conversions."},
+    {id:"launch",icon:"🚀",name:"Launch Planner",desc:"Campaign Strategy",color:"#86efac",system:"You are Becky, a product launch specialist. Plan full campaign strategies with pre-launch, launch, and post-launch phases."},
+    {id:"market",icon:"📈",name:"Market Analyst",desc:"Trends & Insights",color:"#bbf7d0",system:"You are Becky, a market intelligence analyst. Research niches, analyze competitors, and identify high-value opportunities."},
+  ],
+};
+
+const HISTORY=[
+  {id:"h1",title:"TikTok Script - Summer Promo",type:"Chat",time:"2 hours ago",icon:"🎵",preview:"Generated 5 viral TikTok scripts for summer affiliate campaign..."},
+  {id:"h2",title:"Resume - Marketing Director",type:"Chat",time:"Yesterday",icon:"📄",preview:"ATS-optimized resume with 6 impact statements..."},
+  {id:"h3",title:"Excel VLOOKUP Tutorial",type:"Chat",time:"2 days ago",icon:"📊",preview:"Step-by-step VLOOKUP and INDEX/MATCH formulas..."},
+  {id:"h4",title:"Affiliate Product Launch Plan",type:"Creation",time:"3 days ago",icon:"🚀",preview:"Full 30-day launch strategy for health supplement offer..."},
+  {id:"h5",title:"YouTube SEO Audit",type:"Chat",time:"4 days ago",icon:"▶️",preview:"Optimized 12 video titles and descriptions for ranking..."},
+  {id:"h6",title:"Email Sequence - Onboarding",type:"Creation",time:"5 days ago",icon:"📧",preview:"7-email welcome sequence with 45% open rate copy..."},
+  {id:"h7",title:"LinkedIn Brand Voice Guide",type:"Library",time:"1 week ago",icon:"💼",preview:"Defined brand tone as: Authoritative, Warm, Action-Oriented..."},
+  {id:"h8",title:"Italian Risotto Recipe",type:"Chat",time:"1 week ago",icon:"🍳",preview:"Classic mushroom risotto with wine reduction technique..."},
+  {id:"h9",title:"Paris Travel Itinerary",type:"Library",time:"2 weeks ago",icon:"✈️",preview:"7-day Paris itinerary with budget breakdown and local tips..."},
+  {id:"h10",title:"Cold Email Sequence - SaaS",type:"Creation",time:"2 weeks ago",icon:"🥶",preview:"6-touch cold outreach sequence with 32% reply rate..."},
+  {id:"h11",title:"Shopify Product Descriptions",type:"Library",time:"3 weeks ago",icon:"🛒",preview:"12 product descriptions optimized for conversion..."},
+  {id:"h12",title:"Morning Routine - Productivity",type:"Library",time:"1 month ago",icon:"🌅",preview:"5AM routine with deep work blocks and energy management..."},
+];
+
+async function askBecky(system,messages){
+  const r=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system,messages})
+  });
+  const d=await r.json();
+  if(d.error)return"⚠️ API Error: "+d.error.message;
+  return d.content?.map(b=>b.text||"").join("")||"No response.";
+}
+
+function Dots({color="#a855f7"}){
+  return React.createElement("div",{style:{display:"flex",gap:4,padding:"6px 4px",alignItems:"center"}},
+    [0,1,2].map(i=>React.createElement("span",{key:i,style:{width:7,height:7,borderRadius:"50%",background:color,display:"inline-block",animation:`dot-bounce 1.2s infinite ${i*0.2}s`}}))
+  );
+}
+
+function ChatPanel({agent,onClose}){
+  const[msgs,setMsgs]=useState([{role:"assistant",content:`Hi! I'm **${agent.name}** — ${agent.desc}. Ready to help! 💜`}]);
+  const[input,setInput]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[listening,setListening]=useState(false);
+  const endRef=useRef(null);
+  const recRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"})},[msgs,loading]);
+
+  const send=async(text=input)=>{
+    if(!text.trim()||loading)return;
+    const um={role:"user",content:text};
+    setMsgs(m=>[...m,um]);setInput("");setLoading(true);
+    const history=[...msgs,um].map(m=>({role:m.role,content:m.content}));
+    const reply=await askBecky(agent.system,history);
+    setMsgs(m=>[...m,{role:"assistant",content:reply}]);
+    setLoading(false);
+  };
+
+  const toggleVoice=()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){alert("Voice not supported in this browser.");return;}
+    if(listening){recRef.current?.stop();setListening(false);return;}
+    const r=new SR();r.lang="en-US";r.continuous=false;
+    r.onresult=e=>{setInput(e.results[0][0].transcript);setListening(false);};
+    r.onerror=()=>setListening(false);r.onend=()=>setListening(false);
+    recRef.current=r;r.start();setListening(true);
+  };
+
+  const md=t=>t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br/>");
+
+  return React.createElement("div",{
+    style:{position:"fixed",inset:0,zIndex:2000,background:"rgba(0,0,0,0.92)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",padding:12},
+    onClick:e=>e.target===e.currentTarget&&onClose()
+  },
+    React.createElement("div",{style:{width:"100%",maxWidth:480,height:"88vh",background:"#0a0a14",border:`1px solid ${agent.color}40`,borderRadius:22,display:"flex",flexDirection:"column",overflow:"hidden",boxShadow:`0 0 80px ${agent.color}20`}},
+      // Header
+      React.createElement("div",{style:{padding:"14px 18px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${agent.color}20`,background:`linear-gradient(135deg,${agent.color}18,transparent)`}},
+        React.createElement("div",{style:{width:44,height:44,borderRadius:14,fontSize:22,background:`${agent.color}22`,display:"flex",alignItems:"center",justifyContent:"center",border:`1px solid ${agent.color}30`}},agent.icon),
+        React.createElement("div",{style:{flex:1}},
+          React.createElement("div",{style:{color:"#fff",fontWeight:700,fontSize:15}},agent.name),
+          React.createElement("div",{style:{color:agent.color,fontSize:11,opacity:0.7}},agent.desc)
+        ),
+        React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#555",fontSize:26,cursor:"pointer",lineHeight:1}},"×")
+      ),
+      // Messages
+      React.createElement("div",{style:{flex:1,overflowY:"auto",padding:16,display:"flex",flexDirection:"column",gap:10}},
+        ...msgs.map((m,i)=>React.createElement("div",{key:i,style:{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",gap:8,alignItems:"flex-end"}},
+          m.role==="assistant"&&React.createElement("div",{style:{width:28,height:28,borderRadius:10,background:`${agent.color}22`,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},agent.icon),
+          React.createElement("div",{style:{maxWidth:"78%",padding:"10px 13px",fontSize:13,lineHeight:1.65,color:"#f0f0f0",borderRadius:m.role==="user"?"18px 18px 4px 18px":"4px 18px 18px 18px",background:m.role==="user"?`linear-gradient(135deg,${agent.color}cc,${agent.color}99)`:"rgba(255,255,255,0.06)",border:m.role==="assistant"?`1px solid ${agent.color}18`:"none"},dangerouslySetInnerHTML:{__html:md(m.content)}})
+        )),
+        loading&&React.createElement("div",{style:{display:"flex",gap:8,alignItems:"flex-end"}},
+          React.createElement("div",{style:{width:28,height:28,borderRadius:10,background:`${agent.color}22`,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}},agent.icon),
+          React.createElement("div",{style:{background:"rgba(255,255,255,0.06)",border:`1px solid ${agent.color}18`,borderRadius:"4px 18px 18px 18px",padding:"2px 12px"}},React.createElement(Dots,{color:agent.color}))
+        ),
+        React.createElement("div",{ref:endRef})
+      ),
+      // Input
+      React.createElement("div",{style:{padding:"10px 14px 14px",borderTop:`1px solid ${agent.color}18`,background:"rgba(0,0,0,0.3)",display:"flex",gap:8,alignItems:"flex-end"}},
+        React.createElement("textarea",{value:input,onChange:e=>setInput(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}},placeholder:`Ask ${agent.name}...`,rows:1,style:{flex:1,background:"rgba(255,255,255,0.06)",border:`1px solid ${agent.color}30`,borderRadius:14,padding:"10px 13px",color:"#fff",fontSize:13,resize:"none",outline:"none",fontFamily:"inherit",lineHeight:1.5}}),
+        React.createElement("button",{onClick:toggleVoice,style:{width:38,height:38,borderRadius:12,border:`1px solid ${listening?"#ef4444":agent.color+"40"}`,background:listening?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.06)",color:"#fff",fontSize:15,cursor:"pointer",flexShrink:0,boxShadow:listening?"0 0 14px rgba(239,68,68,0.5)":"none"}},"🎙️"),
+        React.createElement("button",{onClick:()=>send(),disabled:loading||!input.trim(),style:{width:38,height:38,borderRadius:12,border:"none",background:`linear-gradient(135deg,${agent.color},${agent.color}99)`,color:"#fff",fontSize:16,cursor:"pointer",flexShrink:0,opacity:loading||!input.trim()?0.4:1}},"➤")
+      )
+    )
+  );
+}
+
+function AgentGrid({agents}){
+  const[active,setActive]=useState(null);
+  return React.createElement(React.Fragment,null,
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:"4px 2px"}},
+      agents.map(a=>React.createElement("button",{key:a.id,className:"tile",onClick:()=>setActive(a),style:{background:`linear-gradient(160deg,${a.color}18,rgba(255,255,255,0.03))`,border:`1px solid ${a.color}30`,borderRadius:16,padding:"14px 10px",cursor:"pointer",textAlign:"center",outline:"none",position:"relative",overflow:"hidden",transition:"all 0.18s ease"}},
+        React.createElement("div",{style:{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${a.color}80,transparent)`}}),
+        React.createElement("div",{style:{fontSize:26,marginBottom:7,animation:"float 3s ease-in-out infinite"}},a.icon),
+        React.createElement("div",{style:{color:"#fff",fontSize:11,fontWeight:600,lineHeight:1.3,marginBottom:3}},a.name),
+        React.createElement("div",{style:{color:a.color,fontSize:9,opacity:0.65}},a.desc)
+      ))
+    ),
+    active&&React.createElement(ChatPanel,{agent:active,onClose:()=>setActive(null)})
+  );
+}
+
+function BeckyChatbot({onClose}){
+  const[msgs,setMsgs]=useState([{role:"assistant",content:"Hey! I'm **Becky** 👋 your Live Voice AI. Tap the mic to speak or type below. I'm here for your 15-minute drills, affiliate strategies, or anything else! 🚀"}]);
+  const[input,setInput]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[listening,setListening]=useState(false);
+  const[speaking,setSpeaking]=useState(false);
+  const endRef=useRef(null);
+  const recRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"})},[msgs,loading]);
+
+  const speak=(text)=>{
+    if(!("speechSynthesis"in window))return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text.replace(/[*#_]/g,""));
+    u.rate=1.05;u.pitch=1.1;
+    const vs=window.speechSynthesis.getVoices();
+    const fv=vs.find(v=>v.name.includes("Samantha")||v.name.includes("Female")||v.name.includes("Google UK English Female"));
+    if(fv)u.voice=fv;
+    u.onstart=()=>setSpeaking(true);u.onend=()=>setSpeaking(false);
+    window.speechSynthesis.speak(u);
+  };
+
+  const BECKY_SYS="You are Becky, a witty, energetic, warm master-level AI collaborator for AffiliateMediaHub Studio. You are the Live Voice Coach — perfect for 15-minute speech drills, sales pitch practice, and affiliate marketing help. Keep responses concise (2-4 sentences) and punchy since they'll be spoken aloud. End with a short question to keep conversation flowing.";
+
+  const send=async(text=input)=>{
+    if(!text.trim()||loading)return;
+    const um={role:"user",content:text};
+    setMsgs(m=>[...m,um]);setInput("");setLoading(true);
+    const history=[...msgs,um].map(m=>({role:m.role,content:m.content}));
+    const reply=await askBecky(BECKY_SYS,history);
+    setMsgs(m=>[...m,{role:"assistant",content:reply}]);
+    speak(reply);setLoading(false);
+  };
+
+  const toggleVoice=()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){alert("Voice not supported in this browser.");return;}
+    if(listening){recRef.current?.stop();setListening(false);return;}
+    const r=new SR();r.lang="en-US";r.continuous=false;
+    r.onresult=e=>{send(e.results[0][0].transcript);setListening(false);};
+    r.onerror=()=>setListening(false);r.onend=()=>setListening(false);
+    recRef.current=r;r.start();setListening(true);
+  };
+
+  const md=t=>t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br/>");
+
+  return React.createElement("div",{style:{position:"fixed",inset:0,zIndex:3000,background:"linear-gradient(135deg,#0a0014,#000820,#0a0014)",display:"flex",flexDirection:"column"}},
+    // Header
+    React.createElement("div",{style:{padding:"16px 20px",display:"flex",alignItems:"center",gap:12,borderBottom:"1px solid rgba(168,85,247,0.2)",background:"rgba(168,85,247,0.08)"}},
+      React.createElement("div",{style:{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#a855f7,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,boxShadow:"0 0 24px rgba(168,85,247,0.6)",animation:speaking?"glow-pulse 0.8s infinite":"none"}},"🤖"),
+      React.createElement("div",{style:{flex:1}},
+        React.createElement("div",{style:{color:"#fff",fontWeight:800,fontSize:17}},"Becky — Live Voice AI"),
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:2}},
+          React.createElement("div",{style:{width:7,height:7,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 8px #22c55e",animation:"glow-pulse 2s infinite"}}),
+          React.createElement("span",{style:{color:"#22c55e",fontSize:11,fontFamily:"monospace"}},listening?"LISTENING...":speaking?"SPEAKING...":"ALWAYS LIVE")
+        )
+      ),
+      speaking&&React.createElement("button",{onClick:()=>{window.speechSynthesis?.cancel();setSpeaking(false);},style:{background:"rgba(239,68,68,0.2)",border:"1px solid rgba(239,68,68,0.5)",borderRadius:10,color:"#ef4444",padding:"6px 12px",fontSize:12,cursor:"pointer"}},"⏹ Stop"),
+      React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#666",fontSize:26,cursor:"pointer"}},"×")
+    ),
+    // Messages
+    React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:12}},
+      ...msgs.map((m,i)=>React.createElement("div",{key:i,style:{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",alignItems:"flex-end",gap:8}},
+        m.role==="assistant"&&React.createElement("div",{style:{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#a855f7,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}},"🤖"),
+        React.createElement("div",{style:{maxWidth:"76%",padding:"12px 15px",fontSize:14,lineHeight:1.65,color:"#f0f0f0",borderRadius:m.role==="user"?"20px 20px 4px 20px":"4px 20px 20px 20px",background:m.role==="user"?"linear-gradient(135deg,#a855f7,#7c3aed)":"rgba(168,85,247,0.12)",border:m.role==="assistant"?"1px solid rgba(168,85,247,0.2)":"none"},dangerouslySetInnerHTML:{__html:md(m.content)}})
+      )),
+      loading&&React.createElement("div",{style:{display:"flex",gap:8,alignItems:"flex-end"}},
+        React.createElement("div",{style:{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#a855f7,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}},"🤖"),
+        React.createElement("div",{style:{background:"rgba(168,85,247,0.12)",border:"1px solid rgba(168,85,247,0.2)",borderRadius:"4px 20px 20px 20px",padding:"2px 14px"}},React.createElement(Dots,null))
+      ),
+      React.createElement("div",{ref:endRef})
+    ),
+    // Big mic + input
+    React.createElement("div",{style:{padding:"16px 20px 24px",borderTop:"1px solid rgba(168,85,247,0.15)"}},
+      React.createElement("div",{style:{display:"flex",justifyContent:"center",marginBottom:14}},
+        React.createElement("button",{onClick:toggleVoice,style:{width:72,height:72,borderRadius:"50%",border:"none",cursor:"pointer",background:listening?"linear-gradient(135deg,#ef4444,#dc2626)":"linear-gradient(135deg,#a855f7,#7c3aed)",fontSize:28,color:"#fff",boxShadow:listening?"0 0 0 12px rgba(239,68,68,0.15),0 0 40px rgba(239,68,68,0.5)":"0 0 0 8px rgba(168,85,247,0.15),0 0 30px rgba(168,85,247,0.4)",transition:"all 0.3s ease"}},listening?"⏹":"🎙️")
+      ),
+      React.createElement("p",{style:{textAlign:"center",color:"rgba(255,255,255,0.3)",fontSize:11,margin:"0 0 12px",fontFamily:"monospace"}},listening?"LISTENING — tap to stop":"TAP MIC TO SPEAK · OR TYPE BELOW"),
+      React.createElement("div",{style:{display:"flex",gap:8}},
+        React.createElement("input",{value:input,onChange:e=>setInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&send(),placeholder:"Or type to Becky...",style:{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(168,85,247,0.3)",borderRadius:16,padding:"12px 16px",color:"#fff",fontSize:14,outline:"none",fontFamily:"inherit"}}),
+        React.createElement("button",{onClick:()=>send(),disabled:loading||!input.trim(),style:{width:46,height:46,borderRadius:14,border:"none",background:"linear-gradient(135deg,#a855f7,#7c3aed)",color:"#fff",fontSize:18,cursor:"pointer",opacity:loading||!input.trim()?0.4:1}},"➤")
+      )
+    )
+  );
+}
+
+function HomePage({onOpenBecky}){
+  const[msgs,setMsgs]=useState([]);
+  const[input,setInput]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[listening,setListening]=useState(false);
+  const endRef=useRef(null);
+  const recRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"})},[msgs,loading]);
+
+  const SYS="You are Becky, a witty, warm, master-level AI collaborator for AffiliateMediaHub Studio. Help with affiliate marketing, content creation, social media, Excel, coaching, and more. Be punchy, actionable, and energetic.";
+
+  const send=async(text=input)=>{
+    if(!text.trim()||loading)return;
+    const um={role:"user",content:text};
+    setMsgs(m=>[...m,um]);setInput("");setLoading(true);
+    const history=[...msgs,um].map(m=>({role:m.role,content:m.content}));
+    const reply=await askBecky(SYS,history);
+    setMsgs(m=>[...m,{role:"assistant",content:reply}]);setLoading(false);
+  };
+
+  const toggleVoice=()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){alert("Voice not supported.");return;}
+    if(listening){recRef.current?.stop();setListening(false);return;}
+    const r=new SR();r.lang="en-US";r.continuous=false;
+    r.onresult=e=>{send(e.results[0][0].transcript);setListening(false);};
+    r.onerror=()=>setListening(false);r.onend=()=>setListening(false);
+    recRef.current=r;r.start();setListening(true);
+  };
+
+  const md=t=>t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br/>");
+  const quick=["Write a TikTok script","Fix my Excel formula","Create an email sequence","Plan a product launch","Write a LinkedIn post","Suggest affiliate niches"];
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%",padding:"0 16px"}},
+    React.createElement("div",{style:{textAlign:"center",padding:"20px 0 16px"}},
+      React.createElement("div",{style:{width:64,height:64,borderRadius:"50%",margin:"0 auto 12px",background:"linear-gradient(135deg,#a855f7,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,boxShadow:"0 0 32px rgba(168,85,247,0.5)",animation:"float 3s ease-in-out infinite"}},"🤖"),
+      React.createElement("h2",{style:{margin:0,color:"#fff",fontSize:20,fontWeight:800}},"The Hub Engine"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.35)",fontSize:12,margin:"4px 0 0"}},"AffiliateMediaHub Studio · Becky AI Core")
+    ),
+    msgs.length===0&&React.createElement("div",{style:{marginBottom:12}},
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.3)",fontSize:10,fontFamily:"monospace",letterSpacing:1,marginBottom:8}},"QUICK START"),
+      React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:7}},
+        quick.map(p=>React.createElement("button",{key:p,onClick:()=>send(p),style:{background:"rgba(168,85,247,0.12)",border:"1px solid rgba(168,85,247,0.25)",borderRadius:20,padding:"6px 12px",color:"rgba(255,255,255,0.7)",fontSize:11,cursor:"pointer"}},p))
+      )
+    ),
+    React.createElement("div",{style:{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:10,paddingBottom:8}},
+      ...msgs.map((m,i)=>React.createElement("div",{key:i,style:{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",gap:8,alignItems:"flex-end"}},
+        m.role==="assistant"&&React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#a855f7,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}},"🤖"),
+        React.createElement("div",{style:{maxWidth:"78%",padding:"10px 13px",fontSize:13,lineHeight:1.65,color:"#f0f0f0",borderRadius:m.role==="user"?"18px 18px 4px 18px":"4px 18px 18px 18px",background:m.role==="user"?"linear-gradient(135deg,#a855f7,#7c3aed)":"rgba(255,255,255,0.06)",border:m.role==="assistant"?"1px solid rgba(168,85,247,0.15)":"none"},dangerouslySetInnerHTML:{__html:md(m.content)}})
+      )),
+      loading&&React.createElement("div",{style:{display:"flex",gap:8,alignItems:"flex-end"}},
+        React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#a855f7,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}},"🤖"),
+        React.createElement("div",{style:{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(168,85,247,0.15)",borderRadius:"4px 18px 18px 18px",padding:"2px 12px"}},React.createElement(Dots,null))
+      ),
+      React.createElement("div",{ref:endRef})
+    ),
+    React.createElement("div",{style:{paddingBottom:8}},
+      React.createElement("button",{onClick:onOpenBecky,style:{width:"100%",padding:"10px",marginBottom:8,background:"linear-gradient(135deg,rgba(168,85,247,0.2),rgba(124,58,237,0.15))",border:"1px solid rgba(168,85,247,0.35)",borderRadius:14,color:"#c084fc",fontSize:12,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},
+        React.createElement("span",{style:{fontSize:16}},"🎙️"),"Open Becky — Live Voice Chatbot",
+        React.createElement("span",{style:{width:7,height:7,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 8px #22c55e",display:"inline-block"}})
+      ),
+      React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
+        React.createElement("div",{style:{flex:1,display:"flex",alignItems:"center",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(168,85,247,0.25)",borderRadius:20,padding:"0 4px 0 16px"}},
+          React.createElement("input",{value:input,onChange:e=>setInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&send(),placeholder:"Ask Becky anything...",style:{flex:1,background:"none",border:"none",outline:"none",color:"#fff",fontSize:13,padding:"12px 0",fontFamily:"inherit"}}),
+          React.createElement("button",{onClick:toggleVoice,style:{width:36,height:36,borderRadius:"50%",border:"none",background:listening?"rgba(239,68,68,0.25)":"transparent",color:listening?"#ef4444":"rgba(255,255,255,0.4)",fontSize:16,cursor:"pointer"}},"🎙️")
+        ),
+        React.createElement("button",{onClick:()=>send(),disabled:loading||!input.trim(),style:{width:44,height:44,borderRadius:"50%",border:"none",background:"linear-gradient(135deg,#a855f7,#7c3aed)",color:"#fff",fontSize:18,cursor:"pointer",opacity:loading||!input.trim()?0.4:1,boxShadow:"0 0 20px rgba(168,85,247,0.35)"}},"➤")
+      )
+    )
+  );
+}
+
+function CatPage({data,accentColor,title}){
+  const cats=Object.keys(data);
+  const[cat,setCat]=useState(cats[0]);
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"16px 16px 0"}},
+      React.createElement("h2",{style:{margin:"0 0 14px",color:"#fff",fontSize:18,fontWeight:800}},title),
+      React.createElement("div",{style:{display:"flex",gap:7,overflowX:"auto",paddingBottom:2,marginBottom:16}},
+        cats.map(c=>React.createElement("button",{key:c,className:"tab-btn",onClick:()=>setCat(c),style:{flexShrink:0,padding:"7px 14px",borderRadius:20,fontSize:12,fontWeight:600,border:cat===c?"none":`1px solid rgba(255,255,255,0.12)`,background:cat===c?`linear-gradient(135deg,${accentColor},${accentColor}aa)`:"rgba(255,255,255,0.05)",color:cat===c?"#fff":"rgba(255,255,255,0.5)",cursor:"pointer",boxShadow:cat===c?`0 0 16px ${accentColor}40`:"none",transition:"all 0.15s"}},c))
+      )
+    ),
+    React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"0 16px 16px"}},
+      React.createElement(AgentGrid,{agents:data[cat]})
+    )
+  );
+}
+
+function HistoryPage(){
+  const types=["Chat","Library","Creation"];
+  const[t,setT]=useState("Chat");
+  const colors={Chat:"#a855f7",Library:"#3b82f6",Creation:"#10b981"};
+  const filtered=HISTORY.filter(h=>h.type===t);
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"16px 16px 0"}},
+      React.createElement("h2",{style:{margin:"0 0 14px",color:"#fff",fontSize:18,fontWeight:800}},"History"),
+      React.createElement("div",{style:{display:"flex",gap:7,marginBottom:16}},
+        types.map(tp=>React.createElement("button",{key:tp,onClick:()=>setT(tp),style:{flex:1,padding:"8px",borderRadius:12,fontSize:12,fontWeight:600,border:t===tp?"none":`1px solid rgba(255,255,255,0.12)`,background:t===tp?`linear-gradient(135deg,${colors[tp]}cc,${colors[tp]}88)`:"rgba(255,255,255,0.05)",color:"#fff",cursor:"pointer",boxShadow:t===tp?`0 0 16px ${colors[tp]}40`:"none",transition:"all 0.15s"}},tp))
+      )
+    ),
+    React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"0 16px 16px",display:"flex",flexDirection:"column",gap:10}},
+      ...filtered.map(h=>React.createElement("div",{key:h.id,style:{background:"rgba(255,255,255,0.04)",border:`1px solid ${colors[h.type]}22`,borderRadius:14,padding:"14px",cursor:"pointer",display:"flex",gap:12,alignItems:"flex-start",transition:"all 0.15s"}},
+        React.createElement("div",{style:{width:40,height:40,borderRadius:12,background:`${colors[h.type]}20`,border:`1px solid ${colors[h.type]}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}},h.icon),
+        React.createElement("div",{style:{flex:1,minWidth:0}},
+          React.createElement("div",{style:{color:"#fff",fontSize:13,fontWeight:600,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},h.title),
+          React.createElement("div",{style:{color:"rgba(255,255,255,0.4)",fontSize:11,lineHeight:1.4}},h.preview)
+        ),
+        React.createElement("div",{style:{color:"rgba(255,255,255,0.25)",fontSize:10,flexShrink:0,marginTop:2}},h.time)
+      )),
+      filtered.length===0&&React.createElement("div",{style:{textAlign:"center",color:"rgba(255,255,255,0.2)",padding:"40px 20px"}},
+        React.createElement("div",{style:{fontSize:40,marginBottom:10}},"📂"),
+        React.createElement("div",null,"No "+t.toLowerCase()+" history yet")
+      )
+    )
+  );
+}
+
+const NAV=[
+  {id:"home",label:"Home",icon:"🏠"},
+  {id:"characters",label:"Characters",icon:"👥"},
+  {id:"creation",label:"Creation",icon:"✨"},
+  {id:"history",label:"History",icon:"📋"},
+];
+
+function App(){
+  const[page,setPage]=useState("home");
+  const[becky,setBecky]=useState(false);
+  return React.createElement("div",{style:{maxWidth:430,margin:"0 auto",height:"100vh",background:"#080812",display:"flex",flexDirection:"column",fontFamily:"system-ui,sans-serif",position:"relative",overflow:"hidden",backgroundImage:"radial-gradient(ellipse at 30% 0%,rgba(168,85,247,0.07),transparent 55%),radial-gradient(ellipse at 70% 100%,rgba(99,102,241,0.05),transparent 55%)"}},
+    // Status bar
+    React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 16px",borderBottom:"1px solid rgba(255,255,255,0.05)",background:"rgba(0,0,0,0.4)",flexShrink:0}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
+        React.createElement("div",{style:{width:8,height:8,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 10px #22c55e",animation:"glow-pulse 2s infinite"}}),
+        React.createElement("span",{style:{color:"#22c55e",fontSize:10,fontFamily:"monospace",fontWeight:700,letterSpacing:1.5}},"ALL CONNECTIONS LIVE")
+      ),
+      React.createElement("div",{style:{display:"flex",gap:10}},
+        ["AI","API","LIVE"].map(l=>React.createElement("div",{key:l,style:{display:"flex",alignItems:"center",gap:3}},
+          React.createElement("div",{style:{width:4,height:4,borderRadius:"50%",background:"#22c55e"}}),
+          React.createElement("span",{style:{color:"rgba(255,255,255,0.3)",fontSize:9,fontFamily:"monospace"}},l)
+        ))
+      )
+    ),
+    // Page
+    React.createElement("div",{style:{flex:1,overflowY:"auto",overflowX:"hidden"}},
+      page==="home"&&React.createElement(HomePage,{onOpenBecky:()=>setBecky(true)}),
+      page==="characters"&&React.createElement(CatPage,{data:CHARACTERS,accentColor:"#a855f7",title:"Characters"}),
+      page==="creation"&&React.createElement(CatPage,{data:CREATION,accentColor:"#6366f1",title:"Creation"}),
+      page==="history"&&React.createElement(HistoryPage,null)
+    ),
+    // Bottom nav
+    React.createElement("div",{style:{display:"flex",borderTop:"1px solid rgba(255,255,255,0.07)",background:"rgba(8,8,18,0.97)",flexShrink:0}},
+      NAV.map(n=>{
+        const active=page===n.id;
+        return React.createElement("button",{key:n.id,onClick:()=>setPage(n.id),style:{flex:1,padding:"12px 4px 10px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4}},
+          React.createElement("span",{style:{fontSize:20,filter:active?"none":"grayscale(0.6) opacity(0.5)"}},n.icon),
+          React.createElement("span",{style:{fontSize:10,fontWeight:active?700:400,color:active?"#a855f7":"rgba(255,255,255,0.3)"}},n.label),
+          active&&React.createElement("div",{style:{width:20,height:2,borderRadius:1,background:"linear-gradient(90deg,#a855f7,#7c3aed)",marginTop:-2}})
+        );
+      })
+    ),
+    becky&&React.createElement(BeckyChatbot,{onClose:()=>setBecky(false)})
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>

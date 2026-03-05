@@ -97,8 +97,8 @@ const CREATION={
     {id:"deepseek",icon:"🔍",name:"DeepSeek",desc:"Deep Research AI",color:"#ef4444",system:"You are Becky, a YouTube SEO specialist. Create titles, descriptions, keyword clusters, and thumbnail copy."},
     {id:"metaai",icon:"🌐",name:"Meta AI",desc:"Meta's AI Assistant",color:"#ec4899",system:"You are Becky, a visual social media expert. Generate trending image prompts and captions for Instagram and Facebook."},
     {id:"chatgpt",icon:"⚡",name:"ChatGPT",desc:"OpenAI Assistant",color:"#1d9bf0",system:"You are Becky, an X/Twitter strategist. Write viral threads, trending tweets, and real-time engagement posts."},
-    {id:"kimi",icon:"🔮",name:"Kimi K2.5",desc:"Deep Research AI",color:"#8b5cf6",system:"You are Becky channeling Kimi K2.5. Perform exhaustive research, analyze documents, and generate comprehensive reports."},
-    {id:"openclaw",icon:"⚡",name:"OpenClaw Hub",desc:"Automation Gateway",color:"#6366f1",system:"You are Becky, an automation architect. Design cross-platform workflows and automation sequences."},
+    {id:"kimi",icon:"🔮",name:"Google Search",desc:"Open Google.com",color:"#8b5cf6",system:"You are Becky channeling Kimi K2.5. Perform exhaustive research, analyze documents, and generate comprehensive reports."},
+    {id:"openclaw",icon:"⚡",name:"AI Courses",desc:"Free Learning Hub",color:"#6366f1",system:"You are Becky, an automation architect. Design cross-platform workflows and automation sequences."},
   ],
   Social:[
     {id:"tiktok2",icon:"🎵",name:"TikTok Studio",desc:"Content Calendar",color:"#f43f5e",system:"You are Becky, a TikTok content strategist. Plan content calendars and batch-create scripts."},
@@ -387,7 +387,7 @@ function HomePage({onOpenBecky}){
   };
 
   const md=t=>t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br/>");
-  const quick=["Write a TikTok script","Fix my Excel formula","Create an email sequence","Plan a product launch","Write a LinkedIn post","Suggest affiliate niches"];
+  const quick=["Help me find a job","Fix my Excel formula","Create an email sequence","Plan a product launch","Update my resume","Teach me AI basics"];
 
   return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%",padding:"0 16px"}},
     React.createElement("div",{style:{textAlign:"center",padding:"20px 0 16px"}},
@@ -419,7 +419,20 @@ function HomePage({onOpenBecky}){
       ),
       React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
         React.createElement("div",{style:{flex:1,display:"flex",alignItems:"center",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(168,85,247,0.25)",borderRadius:20,padding:"0 4px 0 16px"}},
-          React.createElement("input",{value:input,onChange:e=>setInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&send(),placeholder:"Ask Becky anything...",style:{flex:1,background:"none",border:"none",outline:"none",color:"#fff",fontSize:13,padding:"12px 0",fontFamily:"inherit"}}),
+          React.createElement("input",{type:"file",id:"fileInput",accept:"image/*,.pdf,.doc,.docx,.txt",style:{display:"none"},onChange:async e=>{
+              const file=e.target.files[0];if(!file)return;
+              const reader=new FileReader();
+              reader.onload=ev=>{
+                const isImg=file.type.startsWith("image/");
+                const isPDF=file.type==="application/pdf";
+                const msg=isImg?`[📷 Image attached: ${file.name}] Please analyze this image and help me with it.`:isPDF?`[📄 PDF attached: ${file.name}] I've attached a document. Please help me with its contents.`:`[📎 File attached: ${file.name}] Please help me with this file.`;
+                setInput(msg);
+              };
+              reader.readAsDataURL(file);
+              document.getElementById("fileInput").value="";
+            }}),
+            React.createElement("button",{onClick:()=>document.getElementById("fileInput").click(),title:"Attach image or PDF",style:{width:36,height:36,borderRadius:"50%",border:"none",background:"rgba(168,85,247,0.15)",color:"rgba(168,85,247,0.8)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",marginRight:4}},"➕"),
+            React.createElement("input",{value:input,onChange:e=>setInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&send(),placeholder:"Ask Becky anything...",style:{flex:1,background:"none",border:"none",outline:"none",color:"#fff",fontSize:13,padding:"12px 0",fontFamily:"inherit"}}),
           React.createElement("button",{onClick:toggleVoice,style:{width:36,height:36,borderRadius:"50%",border:"none",background:listening?"rgba(239,68,68,0.25)":"transparent",color:listening?"#ef4444":"rgba(255,255,255,0.4)",fontSize:16,cursor:"pointer"}},"🎙️")
         ),
         React.createElement("button",{onClick:()=>send(),disabled:loading||!input.trim(),style:{width:44,height:44,borderRadius:"50%",border:"none",background:"linear-gradient(135deg,#a855f7,#7c3aed)",color:"#fff",fontSize:18,cursor:"pointer",opacity:loading||!input.trim()?0.4:1,boxShadow:"0 0 20px rgba(168,85,247,0.35)"}},"➤")
@@ -522,26 +535,375 @@ function APIKeyScreen({onSave}){
 }
 
 
+
+
+function MemoryPage(){
+  const[activeCard,setActiveCard]=React.useState(null);
+  const cards=[
+    {
+      id:"excel",icon:"📊",title:"Excel Skills",color:"#22c55e",
+      tips:[
+        {q:"Sum a column",a:"=SUM(A1:A10) — adds all numbers in cells A1 to A10"},
+        {q:"Average of numbers",a:"=AVERAGE(A1:A10) — finds the middle value"},
+        {q:"Count items",a:"=COUNT(A1:A10) — counts how many cells have numbers"},
+        {q:"If/Then formula",a:'=IF(A1>10,"Yes","No") — tests a condition'},
+        {q:"Look up a value",a:"=VLOOKUP(what,where,column,0) — finds data in a table"},
+        {q:"Remove duplicates",a:"Data tab → Remove Duplicates button"},
+        {q:"Freeze top row",a:"View tab → Freeze Panes → Freeze Top Row"},
+        {q:"Filter data",a:"Select data → Data tab → Filter button"},
+      ]
+    },
+    {
+      id:"ai",icon:"🤖",title:"AI Prompting",color:"#a855f7",
+      tips:[
+        {q:"Be specific",a:"Tell AI exactly what you want. Bad: 'Write something'. Good: 'Write a 3-sentence job email for a warehouse position'"},
+        {q:"Give context",a:"Tell AI who you are. Example: 'I am a 59-year-old warehouse operator looking for work in Orange TX'"},
+        {q:"Ask for format",a:"Say 'Give me a bullet point list' or 'Write this as a short paragraph'"},
+        {q:"Iterate and improve",a:"If you don't like the answer, say 'Make it shorter' or 'Make it more professional'"},
+        {q:"Role prompting",a:"Say 'Act as a resume expert' to get specialized help"},
+        {q:"Use examples",a:"Say 'Write it like this example: ...' to guide the AI"},
+        {q:"Check facts",a:"Always verify important facts AI gives you — it can make mistakes"},
+      ]
+    },
+    {
+      id:"computer",icon:"💻",title:"Computer Skills",color:"#3b82f6",
+      tips:[
+        {q:"Copy / Paste",a:"CTRL+C to copy, CTRL+V to paste, CTRL+X to cut"},
+        {q:"Undo a mistake",a:"CTRL+Z undoes your last action"},
+        {q:"Select all",a:"CTRL+A selects everything on the page or in a document"},
+        {q:"Save a file",a:"CTRL+S saves your current work — do this often!"},
+        {q:"Find on a page",a:"CTRL+F opens search to find words on any page"},
+        {q:"Take a screenshot",a:"Windows key + Shift + S to capture part of your screen"},
+        {q:"Open Task Manager",a:"CTRL+ALT+DELETE if computer is frozen"},
+        {q:"Switch windows",a:"ALT+TAB to switch between open programs"},
+      ]
+    },
+    {
+      id:"github",icon:"🐙",title:"GitHub Basics",color:"#f59e0b",
+      tips:[
+        {q:"What is GitHub?",a:"A website that stores your code like a cloud drive — safe and accessible anywhere"},
+        {q:"Edit a file",a:"Click the file name → click the pencil ✏️ icon → make changes → click green Commit button"},
+        {q:"What is a commit?",a:"A commit is like hitting Save — it records your changes with a message"},
+        {q:"What is main branch?",a:"Main is your live code — like the published version of your app"},
+        {q:"GitHub Pages",a:"Free hosting — turns your index.html into a live website anyone can visit"},
+        {q:"Your live app URL",a:"woodollars12-oneplus.github.io/affiliatemediahub-studio"},
+      ]
+    },
+    {
+      id:"job",icon:"💼",title:"Job Search Tips",color:"#ec4899",
+      tips:[
+        {q:"Your strongest skill",a:"20+ years industrial operations — forklift, OSHA, safety compliance, shift leadership"},
+        {q:"New skills to mention",a:"Built AI web app, learning Microsoft Office, Google AI, prompt engineering"},
+        {q:"Target employers nearby",a:"ExxonMobil, Chevron Phillips, BASF, Huntsman, DuPont — all near Orange/Beaumont TX"},
+        {q:"LinkedIn profile tip",a:"Add your Hub Engine app link as a featured project — it stands out!"},
+        {q:"Resume tip",a:"Lead with your AI project — it shows you are learning and motivated"},
+        {q:"WorkForce Solutions",a:"workforcesolutions.com — free job placement help in Southeast Texas"},
+        {q:"Indeed & LinkedIn",a:"Apply on indeed.com and linkedin.com/jobs every day — consistency wins"},
+      ]
+    },
+    {
+      id:"ai_tools",icon:"🔧",title:"AI Tools Quick Ref",color:"#06b6d4",
+      tips:[
+        {q:"Claude (Anthropic)",a:"Best for writing, coding, analysis — what we use to build your app! claude.ai"},
+        {q:"ChatGPT (OpenAI)",a:"Great for general questions and writing — chatgpt.com"},
+        {q:"Google Gemini",a:"Powers your Becky app! Also at gemini.google.com — free to use"},
+        {q:"DeepSeek",a:"Free powerful AI for research and analysis — deepseek.com"},
+        {q:"Meta AI",a:"Free AI inside Facebook, Instagram, WhatsApp — just type @ Meta AI"},
+        {q:"Microsoft Copilot",a:"AI built into Windows and Office — free at copilot.microsoft.com"},
+        {q:"Your API key",a:"Keep it safe! Never share it publicly. Get new ones at aistudio.google.com"},
+      ]
+    },
+  ];
+
+  return React.createElement("div",{style:{height:"100%",overflowY:"auto",padding:"16px 12px 80px"}},
+    React.createElement("div",{style:{marginBottom:16}},
+      React.createElement("h2",{style:{color:"#fff",fontSize:20,fontWeight:800,margin:"0 0 4px"}},"🧠 Memory Builder"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.4)",fontSize:12,margin:0}},"Tap any card to refresh your skills on the go")
+    ),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}},
+      cards.map(card=>React.createElement("div",{key:card.id,onClick:()=>setActiveCard(activeCard===card.id?null:card.id),style:{background:activeCard===card.id?`${card.color}20`:"rgba(255,255,255,0.04)",border:`1px solid ${activeCard===card.id?card.color:"rgba(255,255,255,0.08)"}`,borderRadius:16,padding:14,cursor:"pointer",transition:"all 0.2s"}},
+        React.createElement("div",{style:{fontSize:28,marginBottom:6}},""+card.icon),
+        React.createElement("div",{style:{color:"#fff",fontWeight:700,fontSize:13}},""+card.title),
+        React.createElement("div",{style:{color:"rgba(255,255,255,0.4)",fontSize:11,marginTop:2}},""+card.tips.length+" tips")
+      ))
+    ),
+    activeCard&&React.createElement("div",{style:{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(168,85,247,0.2)",borderRadius:16,padding:16}},
+      React.createElement("h3",{style:{color:"#a855f7",fontSize:16,fontWeight:800,margin:"0 0 12px"}},""+cards.find(c=>c.id===activeCard).icon+" "+cards.find(c=>c.id===activeCard).title),
+      cards.find(c=>c.id===activeCard).tips.map((tip,i)=>React.createElement("div",{key:i,style:{marginBottom:12,paddingBottom:12,borderBottom:"1px solid rgba(255,255,255,0.06)"}},
+        React.createElement("div",{style:{color:"#fff",fontWeight:700,fontSize:13,marginBottom:4}},"❓ "+tip.q),
+        React.createElement("div",{style:{color:"rgba(255,255,255,0.6)",fontSize:12,lineHeight:1.6,background:"rgba(168,85,247,0.08)",padding:"8px 12px",borderRadius:10}},"✅ "+tip.a)
+      ))
+    )
+  );
+}
+
+
+function VideoStudioPage(){
+  const[activeTab,setActiveTab]=React.useState("tools");
+  const[idea,setIdea]=React.useState("");
+  const[script,setScript]=React.useState("");
+  const[loading,setLoading]=React.useState(false);
+
+  const tools=[
+    {
+      name:"Grok 4 AI Video",
+      icon:"⚡",
+      color:"#1da1f2",
+      url:"https://grok.com",
+      desc:"Create your AI anchor videos — Alisha, Becky, news segments",
+      tips:["Generate 10-15 clips same outfit/background","Use same prompt each time for consistency","Save your best prompts for reuse"],
+      badge:"Your Main Tool"
+    },
+    {
+      name:"CapCut Editor",
+      icon:"🎬",
+      color:"#ff0050",
+      url:"https://capcut.com",
+      desc:"Join your 6-second clips into full 2-minute videos FREE",
+      tips:["Import all clips → drag to timeline","Add captions automatically","Use templates for news style","Export in 1080p for YouTube/TikTok"],
+      badge:"Best Free Editor"
+    },
+    {
+      name:"VN Video Editor",
+      icon:"🎥",
+      color:"#7c3aed",
+      url:"https://www.vlognow.me",
+      desc:"Professional mobile editor — great for joining AI clips smoothly",
+      tips:["Multi-track editing on phone","Smooth transitions between clips","Add voiceover while watching video","Free watermark-free exports"],
+      badge:"No Watermark"
+    },
+    {
+      name:"Adobe Firefly",
+      icon:"🔥",
+      color:"#ff6b35",
+      url:"https://firefly.adobe.com",
+      desc:"Generate extra b-roll clips and fill gaps between anchor shots",
+      tips:["Generate matching background scenes","Create text-to-video b-roll","Fill 6-second gaps with relevant footage","Free tier available"],
+      badge:"B-Roll Generator"
+    },
+    {
+      name:"VidCut Editor",
+      icon:"✂️",
+      color:"#22c55e",
+      url:"https://vidcut.com",
+      desc:"Quick trim, cut and join clips — simple and fast on mobile",
+      tips:["Fast clip joining","Remove silences automatically","Add music from free library","One-tap social media export"],
+      badge:"Quick Edit"
+    },
+    {
+      name:"ElevenLabs Voice",
+      icon:"🎙️",
+      color:"#f59e0b",
+      url:"https://elevenlabs.io",
+      desc:"Add professional AI voiceover to your anchor videos",
+      tips:["Clone your own voice","Generate Alisha voiceover","Add narration to silent AI clips","Free tier: 10,000 chars/month"],
+      badge:"AI Voiceover"
+    },
+    {
+      name:"Canva Video",
+      icon:"🎨",
+      color:"#06b6d4",
+      url:"https://canva.com/video",
+      desc:"Create thumbnails, intros, and lower thirds for your shows",
+      tips:["News lower-third templates","YouTube thumbnail maker","Podcast cover art","Brand kit for consistency"],
+      badge:"Thumbnails"
+    },
+    {
+      name:"Clipchamp",
+      icon:"📽️",
+      color:"#ec4899",
+      url:"https://clipchamp.com",
+      desc:"Microsoft free editor — great for Beaumont Daily Briefing style",
+      tips:["Built into Windows 11","News broadcast templates","Add text overlays and tickers","Direct YouTube upload"],
+      badge:"Windows Built-in"
+    },
+  ];
+
+  const workflows=[
+    {
+      title:"Beaumont Daily Briefing",
+      icon:"📺",
+      color:"#1da1f2",
+      steps:[
+        "Ask Becky to write today's AI news script (3 stories, 2 min)",
+        "Open Grok 4 → generate 8-10 Alisha anchor clips same background",
+        "Import all clips into CapCut",
+        "Add ElevenLabs voiceover reading the script",
+        "Add Beaumont Daily Briefing lower third text",
+        "Export and post to TikTok, YouTube Shorts, Instagram Reels"
+      ]
+    },
+    {
+      title:"AffiliateMediaHub Show",
+      icon:"🎙️",
+      color:"#a855f7",
+      steps:[
+        "Ask Becky: Write a 90-second script about [AI tool] for affiliate promotion",
+        "Generate AI anchor clips in Grok 4",
+        "Use Adobe Firefly for b-roll of the tool being shown",
+        "Join everything in VN Editor",
+        "Add your affiliate link in video description",
+        "Post across all platforms same day"
+      ]
+    },
+    {
+      title:"Quick 60-Second TikTok",
+      icon:"🎵",
+      color:"#ff0050",
+      steps:[
+        "Ask Becky: Write a 60-second hook script about [topic]",
+        "Generate 10 x 6-second Grok clips",
+        "Open CapCut → auto-join clips → add auto-captions",
+        "Add trending audio from TikTok sound library",
+        "Post within 30 minutes while topic is trending"
+      ]
+    },
+  ];
+
+  const generateScript=async()=>{
+    if(!idea.trim())return;
+    setLoading(true);setScript("");
+    const key=localStorage.getItem("hub_api_key")||"";
+    if(!key){setScript("⚠️ Please enter your API key first.");setLoading(false);return;}
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
+    const prompt=`You are a professional video script writer for AffiliateMediaHub. Write a SHORT, punchy video script for: "${idea}". 
+
+Format it as:
+🎬 HOOK (first 3 seconds - grab attention):
+📺 MAIN CONTENT (middle section):  
+🔥 CALL TO ACTION (last 5 seconds):
+
+Keep total under 90 seconds when spoken. Make it conversational and energetic. Include [VISUAL CUE] notes for where to cut to different clips.`;
+    try{
+      const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:800,temperature:0.9}})});
+      const d=await r.json();
+      if(d.error){setScript("⚠️ "+d.error.message);}
+      else{setScript(d.candidates?.[0]?.content?.parts?.[0]?.text||"No response");}
+    }catch(e){setScript("⚠️ Error: "+e.message);}
+    setLoading(false);
+  };
+
+  return React.createElement("div",{style:{height:"100%",overflowY:"auto",padding:"16px 12px 80px"}},
+    // Header
+    React.createElement("div",{style:{marginBottom:16}},
+      React.createElement("h2",{style:{color:"#fff",fontSize:20,fontWeight:800,margin:"0 0 4px"}},"🎬 Video Studio"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.4)",fontSize:12,margin:0}},"Build your Beaumont Daily Briefing & AffiliateMediaHub shows")
+    ),
+
+    // Tabs
+    React.createElement("div",{style:{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}},
+      ["tools","workflow","script"].map(t=>React.createElement("button",{key:t,onClick:()=>setActiveTab(t),style:{padding:"8px 14px",borderRadius:20,border:"none",background:activeTab===t?"linear-gradient(135deg,#a855f7,#7c3aed)":"rgba(255,255,255,0.07)",color:activeTab===t?"#fff":"rgba(255,255,255,0.5)",fontSize:12,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}},t==="tools"?"🔧 Video Tools":t==="workflow"?"📋 Workflows":"✍️ Script Writer"))
+    ),
+
+    // TOOLS TAB
+    activeTab==="tools"&&React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+      tools.map(tool=>React.createElement("div",{key:tool.name,style:{background:"rgba(255,255,255,0.04)",border:`1px solid ${tool.color}30`,borderRadius:16,padding:14}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:8}},
+          React.createElement("span",{style:{fontSize:28}},""+tool.icon),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+              React.createElement("span",{style:{color:"#fff",fontWeight:700,fontSize:14}},""+tool.name),
+              React.createElement("span",{style:{background:`${tool.color}25`,color:tool.color,fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20}},""+tool.badge)
+            ),
+            React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:11,margin:"2px 0 0"}},""+tool.desc)
+          )
+        ),
+        React.createElement("div",{style:{marginBottom:10}},
+          tool.tips.map((tip,i)=>React.createElement("div",{key:i,style:{color:"rgba(255,255,255,0.5)",fontSize:11,padding:"3px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}},
+            "▸ "+tip
+          ))
+        ),
+        React.createElement("a",{href:tool.url,target:"_blank",rel:"noopener noreferrer",style:{display:"block",textAlign:"center",background:`linear-gradient(135deg,${tool.color},${tool.color}aa)`,color:"#fff",padding:"10px",borderRadius:12,fontSize:13,fontWeight:700,textDecoration:"none"}},"Open "+tool.name+" →")
+      ))
+    ),
+
+    // WORKFLOW TAB
+    activeTab==="workflow"&&React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:12,margin:"0 0 8px"}},"Step-by-step guides to make your videos fast 🚀"),
+      workflows.map(wf=>React.createElement("div",{key:wf.title,style:{background:"rgba(255,255,255,0.04)",border:`1px solid ${wf.color}30`,borderRadius:16,padding:16}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:12}},
+          React.createElement("span",{style:{fontSize:28}},""+wf.icon),
+          React.createElement("h3",{style:{color:"#fff",fontSize:15,fontWeight:800,margin:0}},""+wf.title)
+        ),
+        wf.steps.map((step,i)=>React.createElement("div",{key:i,style:{display:"flex",gap:10,marginBottom:8,alignItems:"flex-start"}},
+          React.createElement("div",{style:{minWidth:24,height:24,borderRadius:"50%",background:`${wf.color}30`,border:`1px solid ${wf.color}`,display:"flex",alignItems:"center",justifyContent:"center",color:wf.color,fontSize:11,fontWeight:800}},""+( i+1)),
+          React.createElement("p",{style:{color:"rgba(255,255,255,0.6)",fontSize:12,margin:0,lineHeight:1.6}},""+step)
+        ))
+      ))
+    ),
+
+    // SCRIPT WRITER TAB
+    activeTab==="script"&&React.createElement("div",null,
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:12,margin:"0 0 12px"}},"Tell Becky your video idea and get a full script! ✍️"),
+      React.createElement("textarea",{
+        value:idea,
+        onChange:e=>setIdea(e.target.value),
+        placeholder:"Example: A 60-second video about free AI video tools for TikTok...
+Or: Beaumont Daily Briefing covering today's AI news...
+Or: How I built an AI app with no coding experience...",
+        style:{width:"100%",height:120,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(168,85,247,0.3)",borderRadius:14,padding:12,color:"#fff",fontSize:13,fontFamily:"inherit",resize:"none",outline:"none",boxSizing:"border-box",marginBottom:10}
+      }),
+      React.createElement("button",{
+        onClick:generateScript,
+        disabled:loading||!idea.trim(),
+        style:{width:"100%",padding:14,borderRadius:14,border:"none",background:loading?"rgba(168,85,247,0.3)":"linear-gradient(135deg,#a855f7,#7c3aed)",color:"#fff",fontSize:15,fontWeight:700,cursor:loading?"not-allowed":"pointer",marginBottom:16}
+      },loading?"✍️ Writing your script...":"🎬 Generate Video Script"),
+      script&&React.createElement("div",{style:{background:"rgba(168,85,247,0.08)",border:"1px solid rgba(168,85,247,0.3)",borderRadius:14,padding:16}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
+          React.createElement("span",{style:{color:"#a855f7",fontWeight:700,fontSize:13}},"📜 Your Video Script"),
+          React.createElement("button",{onClick:()=>{navigator.clipboard.writeText(script)},style:{background:"rgba(168,85,247,0.2)",border:"none",color:"#a855f7",padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer"}},"Copy")
+        ),
+        React.createElement("p",{style:{color:"rgba(255,255,255,0.8)",fontSize:13,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap"}},""+script)
+      )
+    )
+  );
+}
+
+function SocialPage({platform}){
+  const platforms={
+    tiktok:{url:"https://www.tiktok.com",name:"TikTok",color:"#ff0050",icon:"🎵"},
+    youtube:{url:"https://www.youtube.com",name:"YouTube",color:"#ff0000",icon:"▶️"},
+    instagram:{url:"https://www.instagram.com",name:"Instagram",color:"#e1306c",icon:"📸"},
+    google:{url:"https://www.google.com",name:"Google",color:"#4285f4",icon:"🔍"},
+    facebook:{url:"https://www.facebook.com",name:"Facebook",color:"#1877f2",icon:"👥"},
+  };
+  const p=platforms[platform]||platforms.google;
+  return React.createElement("div",{style:{height:"100%",display:"flex",flexDirection:"column"}},
+    React.createElement("div",{style:{padding:"8px 12px",background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",gap:8,borderBottom:"1px solid rgba(168,85,247,0.2)"}},
+      React.createElement("span",{style:{fontSize:20}}),
+      React.createElement("span",{style:{color:"#fff",fontWeight:700,fontSize:14}},""+p.icon+" "+p.name),
+      React.createElement("a",{href:p.url,target:"_blank",rel:"noopener noreferrer",style:{marginLeft:"auto",background:"rgba(168,85,247,0.3)",color:"#fff",padding:"4px 12px",borderRadius:20,fontSize:11,textDecoration:"none",fontWeight:600}},"Open in Browser ↗")
+    ),
+    React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,gap:16}},
+      React.createElement("div",{style:{fontSize:64}},""+p.icon),
+      React.createElement("h2",{style:{color:"#fff",fontSize:22,fontWeight:800,margin:0}},""+p.name),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:13,textAlign:"center",margin:0}},"Tap the button below to open "+p.name+" in your browser"),
+      React.createElement("a",{href:p.url,target:"_blank",rel:"noopener noreferrer",style:{background:"linear-gradient(135deg,#a855f7,#7c3aed)",color:"#fff",padding:"14px 32px",borderRadius:16,fontSize:15,fontWeight:700,textDecoration:"none",boxShadow:"0 0 24px rgba(168,85,247,0.4)"}},"Open "+p.name+" →"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.3)",fontSize:11,textAlign:"center"}},"Note: Some sites block embedding for security. Use 'Open in Browser' for full access.")
+    )
+  );
+}
+
 function LearnPage(){
   const courses=[
-    {name:"Google AI Essentials",provider:"Google / Coursera",url:"https://coursera.org/learn/google-ai-essentials",icon:"🎓",free:true,desc:"Official Google AI course covering fundamentals"},
-    {name:"Generative AI for Everyone",provider:"DeepLearning.AI",url:"https://coursera.org/learn/generative-ai-for-everyone",icon:"🤖",free:true,desc:"Andrew Ng teaches AI for non-technical learners"},
-    {name:"ChatGPT Prompt Engineering",provider:"DeepLearning.AI",url:"https://learn.deeplearning.ai/chatgpt-prompt-eng",icon:"⚡",free:true,desc:"Master prompt engineering for AI agents"},
-    {name:"Microsoft AI Skills",provider:"Microsoft Learn",url:"https://learn.microsoft.com/ai",icon:"💻",free:true,desc:"AI + Microsoft Office integration skills"},
-    {name:"AI For Everyone",provider:"Coursera / Andrew Ng",url:"https://coursera.org/learn/ai-for-everyone",icon:"🌟",free:true,desc:"Non-technical AI fundamentals course"},
-    {name:"Elements of AI",provider:"University of Helsinki",url:"https://elementsofai.com",icon:"🧠",free:true,desc:"Free online AI course for beginners"},
-    {name:"Intro to Generative AI",provider:"Google Cloud",url:"https://cloudskillsboost.google/course_templates/536",icon:"☁️",free:true,desc:"Google Cloud intro to generative AI"},
-    {name:"fast.ai Practical AI",provider:"fast.ai",url:"https://fast.ai",icon:"🚀",free:true,desc:"Practical deep learning for everyone"},
-    {name:"Excel AI Features",provider:"Microsoft Learn",url:"https://support.microsoft.com/excel",icon:"📊",free:true,desc:"AI-powered Excel skills and Copilot"},
-    {name:"LinkedIn AI Learning",provider:"LinkedIn Learning",url:"https://linkedin.com/learning/topics/ai",icon:"💼",free:false,desc:"Professional AI courses for career growth"},
+    {name:"30 Days of GenAI — FREE",provider:"Coursera (Free Video Series)",url:"https://www.coursera.org/articles/30-days-gen-ai",icon:"🏆",free:true,desc:"5 min/day — Learn ChatGPT, Gemini & DALL-E. Best free alternative to paid courses!"},
+    {name:"AI for Everyday Life",provider:"Kennesaw State / Coursera",url:"https://www.coursera.org/learn/ai-for-everyday-life",icon:"🌟",free:true,desc:"Easy step-by-step AI course, rated 4.8 stars. Perfect for beginners!"},
+    {name:"AI For Everyone",provider:"DeepLearning.AI / Andrew Ng",url:"https://coursera.org/learn/ai-for-everyone",icon:"🎓",free:true,desc:"The #1 beginner AI course. Non-technical, practical and free to audit"},
+    {name:"Google AI Essentials",provider:"Google / Coursera",url:"https://coursera.org/learn/google-ai-essentials",icon:"🔵",free:true,desc:"Official Google AI certification course — free to start"},
+    {name:"Intro to AI — IBM",provider:"IBM / Coursera",url:"https://www.coursera.org/learn/introduction-to-ai",icon:"💡",free:true,desc:"IBM's beginner AI course with hands-on projects"},
+    {name:"ChatGPT Prompt Engineering",provider:"DeepLearning.AI",url:"https://learn.deeplearning.ai/chatgpt-prompt-eng",icon:"⚡",free:true,desc:"Master prompts to control AI agents like a pro"},
+    {name:"Elements of AI",provider:"University of Helsinki",url:"https://elementsofai.com",icon:"🧠",free:true,desc:"World-famous free AI course — no math needed!"},
+    {name:"Microsoft AI Skills",provider:"Microsoft Learn",url:"https://learn.microsoft.com/ai",icon:"💻",free:true,desc:"AI + Microsoft Excel, Word, Copilot skills — FREE"},
+    {name:"Google Gemini AI Skills",provider:"Google Cloud Skills",url:"https://cloudskillsboost.google/course_templates/536",icon:"☁️",free:true,desc:"Learn to use Google Gemini — same AI powering Becky!"},
+    {name:"Coursiv — 15 min/day AI",provider:"Coursiv.com (Paid)",url:"https://coursiv.com",icon:"🚀",free:false,desc:"The paid course you mentioned — 15 min/day lessons for non-technical learners"},
   ];
   const social=[
     {name:"TikTok",url:"https://tiktok.com",icon:"🎵",color:"#ff0050"},
     {name:"YouTube",url:"https://youtube.com",icon:"▶️",color:"#ff0000"},
     {name:"Instagram",url:"https://instagram.com",icon:"📸",color:"#e1306c"},
-    {name:"LinkedIn",url:"https://linkedin.com",icon:"💼",color:"#0077b5"},
+    {name:"Google",url:"https://google.com",icon:"🔍",color:"#4285f4"},
     {name:"Facebook",url:"https://facebook.com",icon:"👥",color:"#1877f2"},
-    {name:"X / Twitter",url:"https://x.com",icon:"🐦",color:"#1da1f2"},
+    {name:"LinkedIn",url:"https://linkedin.com",icon:"💼",color:"#0077b5"},
   ];
   const [tab,setTab]=React.useState("courses");
   return React.createElement("div",{style:{height:"100%",overflowY:"auto",padding:"16px 12px 80px"}},

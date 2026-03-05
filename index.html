@@ -537,6 +537,138 @@ function APIKeyScreen({onSave}){
 
 
 
+
+function CastPage(){
+  const[copied,setCopied]=React.useState("");
+  const cast=[
+    {
+      id:"susan",
+      name:"Susan",
+      day:"📅 MONDAY",
+      show:"The Daily Podcast News — World AI News Morning Edition",
+      color:"#f59e0b",
+      emoji:"👱‍♀️",
+      personality:"Professional, authoritative, warm morning anchor energy",
+      appearance:"Blonde bob haircut, red silk blouse, professional news desk, large city window background, morning sunlight, microphone on desk",
+      grokvideo:`Professional female news anchor named Susan, blonde short bob haircut, red silk blouse, sitting at modern news desk, large floor-to-ceiling window with city skyline and morning sunlight behind her, professional podcast microphone, looking directly at camera, speaking confidently, "THE DAILY PODCAST NEWS: WORLD AI NEWS - MORNING EDITION" displayed on screen behind her, cinematic studio lighting, photorealistic`,
+      grokimage:`Professional female news anchor Susan, blonde bob haircut, red silk blouse, modern news desk, city window background morning light, podcast microphone, confident smile, photorealistic portrait`,
+      voicestyle:"Clear, authoritative, warm and welcoming — like Good Morning America",
+      topics:["Morning AI news recap","Tech headlines","Industry updates","Monday motivation + AI tips"],
+    },
+    {
+      id:"alisha",
+      name:"Alisha",
+      day:"📅 WEDNESDAY",
+      show:"AffiliateMediaHub — World AI News Midweek Report",
+      color:"#ec4899",
+      emoji:"👩‍💼",
+      personality:"Dynamic, engaging, relatable — the cool friend who knows everything about AI",
+      appearance:"Dark long hair, red jacket, podcast studio with plants and red neon sign, coffee cup on desk, casual professional",
+      grokvideo:`Professional female podcast host named Alisha, long dark hair, red blazer jacket, sitting at podcast desk with microphone, cozy studio background with plants and warm lighting, coffee cup on desk, looking at camera with confident engaging smile, speaking naturally, photorealistic, cinematic lighting`,
+      grokimage:`Female podcast host Alisha, long dark hair, red jacket, podcast studio, microphone, plants background, warm lighting, confident smile, photorealistic`,
+      voicestyle:"Energetic, conversational, like talking to a smart friend",
+      topics:["Midweek AI tool reviews","How-to tutorials","Affiliate product spotlights","Wednesday deep dives"],
+    },
+    {
+      id:"lisa",
+      name:"Lisa",
+      day:"📅 FRIDAY",
+      show:"AffiliateMediaHub — Friday AI Wrap Up & Weekend Preview",
+      color:"#a855f7",
+      emoji:"👩‍🦱",
+      personality:"Bold, confident, trendsetting — the Friday energy closer",
+      appearance:"Long straight black hair, red silk blouse open collar, clean studio backdrop, sophisticated and powerful presence",
+      grokvideo:`Professional female presenter named Lisa, long straight black hair, red silk blouse with open collar, standing or sitting in clean modern studio, simple background, confident powerful stance, looking directly at camera, photorealistic, fashion editorial lighting, sophisticated`,
+      grokimage:`Female presenter Lisa, long straight black hair, red silk blouse, modern studio, confident pose, direct eye contact, photorealistic editorial style`,
+      voicestyle:"Bold, punchy, exciting — high energy Friday closer",
+      topics:["Weekly AI wrap up","Weekend learning recommendations","Trending AI tools","Friday motivation"],
+    },
+    {
+      id:"paul",
+      name:"Paul — Baby Boss",
+      day:"📅 THURSDAY (Bonus!)",
+      show:"The Baby Boss Report — AI News For Serious People",
+      color:"#22c55e",
+      emoji:"👶",
+      personality:"Hilariously serious baby who thinks he runs everything — deadpan comedy genius",
+      appearance:"Baby body, adult-style beard, thick glasses, grey t-shirt, serious expression, black background — pure comedic gold",
+      grokvideo:`Funny AI generated baby with adult beard and thick glasses, grey t-shirt, sitting in front of black background, extremely serious stern expression, looking directly at camera like a CEO giving a press conference, photorealistic, comedic, "THE BABY BOSS REPORT" podcast setup, small microphone`,
+      grokimage:`Baby with adult beard and glasses, grey shirt, black background, extremely serious CEO expression, photorealistic funny portrait`,
+      voicestyle:"Deep serious voice saying ridiculous things — deadpan comedy",
+      topics:["Baby Boss business tips","Serious AI advice from a toddler","Comedy takes on tech news","Thursday laughs"],
+      viral:"⚡ THIS ONE WILL GO VIRAL — post Paul first on TikTok!",
+    },
+  ];
+
+  const copyText=(text,id)=>{
+    navigator.clipboard.writeText(text);
+    setCopied(id);
+    setTimeout(()=>setCopied(""),2000);
+  };
+
+  const[active,setActive]=React.useState("susan");
+  const current=cast.find(c=>c.id===active);
+
+  return React.createElement("div",{style:{height:"100%",overflowY:"auto",padding:"16px 12px 80px"}},
+    // Header
+    React.createElement("div",{style:{marginBottom:16}},
+      React.createElement("h2",{style:{color:"#fff",fontSize:20,fontWeight:800,margin:"0 0 4px"}},"🎭 Your Cast"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.4)",fontSize:12,margin:0}},"Mon/Wed/Fri/Thu shows — tap for Grok prompts")
+    ),
+
+    // Character selector
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}},
+      cast.map(c=>React.createElement("button",{key:c.id,onClick:()=>setActive(c.id),style:{padding:"12px 8px",borderRadius:16,border:`2px solid ${active===c.id?c.color:"transparent"}`,background:active===c.id?`${c.color}20`:"rgba(255,255,255,0.04)",cursor:"pointer",textAlign:"center"}},
+        React.createElement("div",{style:{fontSize:28,marginBottom:4}},""+c.emoji),
+        React.createElement("div",{style:{color:"#fff",fontWeight:700,fontSize:13}},""+c.name),
+        React.createElement("div",{style:{color:c.color,fontSize:10,fontWeight:600}},""+c.day)
+      ))
+    ),
+
+    // Character detail card
+    current&&React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+
+      // Show info
+      React.createElement("div",{style:{background:`${current.color}15`,border:`1px solid ${current.color}40`,borderRadius:16,padding:14}},
+        React.createElement("div",{style:{color:current.color,fontWeight:800,fontSize:14,marginBottom:4}},""+current.emoji+" "+current.name+" — "+current.day),
+        React.createElement("div",{style:{color:"#fff",fontSize:13,fontWeight:600,marginBottom:6}},""+current.show),
+        React.createElement("div",{style:{color:"rgba(255,255,255,0.5)",fontSize:12}},"🎭 "+current.personality),
+        current.viral&&React.createElement("div",{style:{background:"rgba(255,200,0,0.15)",border:"1px solid rgba(255,200,0,0.4)",borderRadius:10,padding:"8px 10px",marginTop:8,color:"#fbbf24",fontSize:12,fontWeight:700}},""+current.viral)
+      ),
+
+      // Topics
+      React.createElement("div",{style:{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:12}},
+        React.createElement("div",{style:{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:700,marginBottom:8}},"📋 SHOW TOPICS"),
+        current.topics.map((t,i)=>React.createElement("div",{key:i,style:{color:"rgba(255,255,255,0.5)",fontSize:12,padding:"4px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}},"▸ "+t))
+      ),
+
+      // Grok Video Prompt
+      React.createElement("div",{style:{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:12}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+          React.createElement("div",{style:{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:700}},"🎬 GROK VIDEO PROMPT"),
+          React.createElement("button",{onClick:()=>copyText(current.grokvideo,"vid_"+current.id),style:{background:copied==="vid_"+current.id?"rgba(34,197,94,0.3)":"rgba(168,85,247,0.2)",border:"none",color:copied==="vid_"+current.id?"#22c55e":"#a855f7",padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700}},copied==="vid_"+current.id?"✅ Copied!":"Copy")
+        ),
+        React.createElement("p",{style:{color:"rgba(255,255,255,0.7)",fontSize:11,lineHeight:1.7,margin:0,fontFamily:"monospace",background:"rgba(0,0,0,0.3)",padding:10,borderRadius:8}},""+current.grokvideo)
+      ),
+
+      // Grok Image Prompt  
+      React.createElement("div",{style:{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:12}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+          React.createElement("div",{style:{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:700}},"🖼️ GROK IMAGE PROMPT"),
+          React.createElement("button",{onClick:()=>copyText(current.grokimage,"img_"+current.id),style:{background:copied==="img_"+current.id?"rgba(34,197,94,0.3)":"rgba(168,85,247,0.2)",border:"none",color:copied==="img_"+current.id?"#22c55e":"#a855f7",padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700}},copied==="img_"+current.id?"✅ Copied!":"Copy")
+        ),
+        React.createElement("p",{style:{color:"rgba(255,255,255,0.7)",fontSize:11,lineHeight:1.7,margin:0,fontFamily:"monospace",background:"rgba(0,0,0,0.3)",padding:10,borderRadius:8}},""+current.grokimage)
+      ),
+
+      // Voice style
+      React.createElement("div",{style:{background:"rgba(255,255,255,0.04)",borderRadius:14,padding:12}},
+        React.createElement("div",{style:{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:700,marginBottom:6}},"🎙️ VOICE STYLE"),
+        React.createElement("p",{style:{color:"rgba(255,255,255,0.6)",fontSize:12,margin:0,lineHeight:1.6}},""+current.voicestyle)
+      )
+    )
+  );
+}
+
 function MemoryPage(){
   const[activeCard,setActiveCard]=React.useState(null);
   const cards=[
@@ -717,6 +849,66 @@ function VideoStudioPage(){
       tips:["Built into Windows 11","News broadcast templates","Add text overlays and tickers","Direct YouTube upload"],
       badge:"Windows Built-in"
     },
+    {
+      name:"Google Veo 3.1",
+      icon:"🎯",
+      color:"#4285f4",
+      url:"https://aistudio.google.com",
+      desc:"Google's most powerful video AI — consistent characters up to 2+ minutes!",
+      tips:[
+        "Use your FREE Vertex AI credits here NOW!",
+        "Generates same character throughout entire video",
+        "Type full script and it builds the whole video",
+        "Best for Alisha anchor videos — stays consistent",
+        "Access via Google AI Studio or Vertex AI console"
+      ],
+      badge:"🔥 Use Free Credits!"
+    },
+    {
+      name:"Google Flow AI",
+      icon:"🌊",
+      color:"#0f9d58",
+      url:"https://flow.google",
+      desc:"String multiple scenes together with same character — perfect for news shows!",
+      tips:[
+        "Connects your clips into one flowing video",
+        "Keeps Alisha looking the same in every scene",
+        "Add scene descriptions for each part of script",
+        "Use with Veo for complete 2-minute shows",
+        "Free credits available — use before they expire!"
+      ],
+      badge:"Consistent Character"
+    },
+    {
+      name:"Google Vertex AI",
+      icon:"🔷",
+      color:"#1a73e8",
+      url:"https://console.cloud.google.com/vertex-ai",
+      desc:"Your Google Cloud AI studio — where your free credits live!",
+      tips:[
+        "Check your remaining free credits here first",
+        "Access Veo and Imagen video models",
+        "Generate longer professional videos",
+        "Connect to your Google AI Studio account",
+        "Credits expire — use them this month!"
+      ],
+      badge:"Free Credits Active"
+    },
+    {
+      name:"Google AI Studio",
+      icon:"⭐",
+      color:"#fbbc04",
+      url:"https://aistudio.google.com",
+      desc:"Your home base — Gemini API key AND Veo video generation all in one place",
+      tips:[
+        "This is where your Becky API key lives",
+        "Also access Veo video generation here",
+        "Try VideoFX for AI video creation",
+        "Free tier available with your Google account",
+        "Same login as your Gmail account"
+      ],
+      badge:"Your Home Base"
+    },
   ];
 
   const workflows=[
@@ -758,7 +950,36 @@ function VideoStudioPage(){
         "Post within 30 minutes while topic is trending"
       ]
     },
+    {
+      title:"Google Veo Full Video (USE FREE CREDITS!)",
+      icon:"🎯",
+      color:"#4285f4",
+      steps:[
+        "Click Script Writer tab → select 🎯 Google Veo Script",
+        "Type your video idea → Becky writes scene-by-scene prompts",
+        "Go to aistudio.google.com → open VideoFX or Veo",
+        "Paste Scene 1 VEO PROMPT → generate clip",
+        "Repeat for each scene — same Alisha description = consistent character!",
+        "Import all scenes into Google Flow to join them",
+        "Export final video → post everywhere!"
+      ]
+    },
+    {
+      title:"Google Flow Character Consistency",
+      icon:"🌊",
+      color:"#0f9d58",
+      steps:[
+        "Go to flow.google → sign in with Google account",
+        "Create new project → import your Grok/Veo clips",
+        "Use Flow's character lock feature to maintain Alisha's look",
+        "Add your Becky-written script as voiceover text",
+        "Let Flow generate transition scenes between clips",
+        "Download finished 1-2 minute consistent video!"
+      ]
+    },
   ];
+
+  const[scriptType,setScriptType]=React.useState("veo");
 
   const generateScript=async()=>{
     if(!idea.trim())return;
@@ -766,14 +987,65 @@ function VideoStudioPage(){
     const key=localStorage.getItem("hub_api_key")||"";
     if(!key){setScript("⚠️ Please enter your API key first.");setLoading(false);return;}
     const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
-    const prompt=`You are a professional video script writer for AffiliateMediaHub. Write a SHORT, punchy video script for: "${idea}". 
 
-Format it as:
-🎬 HOOK (first 3 seconds - grab attention):
-📺 MAIN CONTENT (middle section):  
-🔥 CALL TO ACTION (last 5 seconds):
+    const veoPrompt=`You are a professional video script writer for AffiliateMediaHub. 
+Write a GOOGLE VEO/FLOW READY script for: "${idea}"
 
-Keep total under 90 seconds when spoken. Make it conversational and energetic. Include [VISUAL CUE] notes for where to cut to different clips.`;
+Format EXACTLY like this for Google Veo 3.1 — each scene is one video generation:
+
+━━━━━━━━━━━━━━━━━━━━━━
+🎬 SCENE 1 — HOOK (0:00-0:06)
+VEO PROMPT: [Exact prompt to type into Google Veo — describe Alisha, background, action]
+ALISHA SAYS: "[Exact words spoken — short, punchy, 1-2 sentences max]"
+━━━━━━━━━━━━━━━━━━━━━━
+🎬 SCENE 2 — INTRO (0:06-0:15)  
+VEO PROMPT: [Exact Veo prompt]
+ALISHA SAYS: "[Exact words]"
+━━━━━━━━━━━━━━━━━━━━━━
+🎬 SCENE 3 — MAIN POINT 1 (0:15-0:30)
+VEO PROMPT: [Exact Veo prompt]
+ALISHA SAYS: "[Exact words]"
+━━━━━━━━━━━━━━━━━━━━━━
+🎬 SCENE 4 — MAIN POINT 2 (0:30-0:45)
+VEO PROMPT: [Exact Veo prompt]
+ALISHA SAYS: "[Exact words]"
+━━━━━━━━━━━━━━━━━━━━━━
+🎬 SCENE 5 — MAIN POINT 3 (0:45-1:00)
+VEO PROMPT: [Exact Veo prompt]
+ALISHA SAYS: "[Exact words]"
+━━━━━━━━━━━━━━━━━━━━━━
+🎬 SCENE 6 — CALL TO ACTION (1:00-1:15)
+VEO PROMPT: [Exact Veo prompt]
+ALISHA SAYS: "[Exact words — include follow/like/subscribe call]"
+━━━━━━━━━━━━━━━━━━━━━━
+
+ALISHA CHARACTER (use in EVERY Veo prompt for consistency):
+"Professional female news anchor, dark hair, glasses, silk blouse, modern news desk, city skyline background, professional studio lighting, looking directly at camera, speaking confidently"
+
+Total video: ~75 seconds. Keep each scene SHORT — Alisha speaks max 2 sentences per scene.`;
+
+    const tiktokPrompt=`You are a viral TikTok script writer for AffiliateMediaHub.
+Write a 60-SECOND TIKTOK SCRIPT for: "${idea}"
+
+Format for maximum engagement:
+
+🎯 HOOK (0-3 seconds): [One shocking/curious sentence — make them STOP scrolling]
+
+📱 SCENE BREAKDOWN:
+[0:03] [What Alisha does/says — 1 sentence]
+[0:08] [Next point — 1 sentence]  
+[0:13] [Build interest — 1 sentence]
+[0:18] [Key revelation — 1 sentence]
+[0:25] [Main value — 2 sentences]
+[0:35] [Proof/example — 1 sentence]
+[0:45] [More value — 1 sentence]
+[0:52] [Call to action — follow for more!]
+
+💬 ON-SCREEN CAPTIONS: [Key words to flash on screen]
+🎵 AUDIO STYLE: [Describe mood — energetic, serious, inspiring]
+#️⃣ HASHTAGS: [10 relevant hashtags]`;
+
+    const prompt=scriptType==="veo"?veoPrompt:tiktokPrompt;
     try{
       const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:800,temperature:0.9}})});
       const d=await r.json();
@@ -834,7 +1106,14 @@ Keep total under 90 seconds when spoken. Make it conversational and energetic. I
 
     // SCRIPT WRITER TAB
     activeTab==="script"&&React.createElement("div",null,
-      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:12,margin:"0 0 12px"}},"Tell Becky your video idea and get a full script! ✍️"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:12,margin:"0 0 12px"}},"Tell Becky your video idea — she writes a complete scene-by-scene script! ✍️"),
+      React.createElement("div",{style:{display:"flex",gap:8,marginBottom:12}},
+        React.createElement("button",{onClick:()=>setScriptType("veo"),style:{flex:1,padding:"10px",borderRadius:12,border:"none",background:scriptType==="veo"?"linear-gradient(135deg,#4285f4,#1a73e8)":"rgba(255,255,255,0.07)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}},"🎯 Google Veo Script"),
+        React.createElement("button",{onClick:()=>setScriptType("tiktok"),style:{flex:1,padding:"10px",borderRadius:12,border:"none",background:scriptType==="tiktok"?"linear-gradient(135deg,#ff0050,#cc0040)":"rgba(255,255,255,0.07)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}},"🎵 TikTok Script")
+      ),
+      scriptType==="veo"&&React.createElement("div",{style:{background:"rgba(66,133,244,0.1)",border:"1px solid rgba(66,133,244,0.3)",borderRadius:12,padding:10,marginBottom:10}},
+        React.createElement("p",{style:{color:"rgba(66,133,244,0.9)",fontSize:11,margin:0,lineHeight:1.6}},"🎯 Veo Mode: Becky writes exact prompts for EACH scene to paste into Google Veo 3.1 — keeps Alisha consistent throughout!")
+      ),
       React.createElement("textarea",{
         value:idea,
         onChange:e=>setIdea(e.target.value),

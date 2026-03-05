@@ -93,10 +93,10 @@ const CHARACTERS={
 
 const CREATION={
   Hot:[
-    {id:"tiktok",icon:"🎵",name:"TikTok Agent",desc:"Viral Short Scripts",color:"#f43f5e",system:"You are Becky, a TikTok viral content expert. Generate 15-second scripts, trending hooks, hashtags, and viral formats for affiliate marketing."},
-    {id:"youtube",icon:"▶️",name:"YouTube Engine",desc:"SEO Titles & Desc",color:"#ef4444",system:"You are Becky, a YouTube SEO specialist. Create titles, descriptions, keyword clusters, and thumbnail copy."},
-    {id:"igfb",icon:"📸",name:"IG/FB Visual",desc:"Feed & Stories",color:"#ec4899",system:"You are Becky, a visual social media expert. Generate trending image prompts and captions for Instagram and Facebook."},
-    {id:"twitter",icon:"🐦",name:"X/Twitter Pro",desc:"Threads & Trends",color:"#1d9bf0",system:"You are Becky, an X/Twitter strategist. Write viral threads, trending tweets, and real-time engagement posts."},
+    {id:"qwen",icon:"🤖",name:"Qwen AI",desc:"Alibaba AI Assistant",color:"#f43f5e",system:"You are Becky, a TikTok viral content expert. Generate 15-second scripts, trending hooks, hashtags, and viral formats for affiliate marketing."},
+    {id:"deepseek",icon:"🔍",name:"DeepSeek",desc:"Deep Research AI",color:"#ef4444",system:"You are Becky, a YouTube SEO specialist. Create titles, descriptions, keyword clusters, and thumbnail copy."},
+    {id:"metaai",icon:"🌐",name:"Meta AI",desc:"Meta's AI Assistant",color:"#ec4899",system:"You are Becky, a visual social media expert. Generate trending image prompts and captions for Instagram and Facebook."},
+    {id:"chatgpt",icon:"⚡",name:"ChatGPT",desc:"OpenAI Assistant",color:"#1d9bf0",system:"You are Becky, an X/Twitter strategist. Write viral threads, trending tweets, and real-time engagement posts."},
     {id:"kimi",icon:"🔮",name:"Kimi K2.5",desc:"Deep Research AI",color:"#8b5cf6",system:"You are Becky channeling Kimi K2.5. Perform exhaustive research, analyze documents, and generate comprehensive reports."},
     {id:"openclaw",icon:"⚡",name:"OpenClaw Hub",desc:"Automation Gateway",color:"#6366f1",system:"You are Becky, an automation architect. Design cross-platform workflows and automation sequences."},
   ],
@@ -517,6 +517,62 @@ function APIKeyScreen({onSave}){
       React.createElement("div",{style:{marginTop:16,padding:"12px",background:"rgba(168,85,247,0.08)",borderRadius:12,border:"1px solid rgba(168,85,247,0.15)"}},
         React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:11,margin:0,textAlign:"center"}},"🔐 Your key is saved locally on your device only · Never stored in code")
       )
+    )
+  );
+}
+
+
+function LearnPage(){
+  const courses=[
+    {name:"Google AI Essentials",provider:"Google / Coursera",url:"https://coursera.org/learn/google-ai-essentials",icon:"🎓",free:true,desc:"Official Google AI course covering fundamentals"},
+    {name:"Generative AI for Everyone",provider:"DeepLearning.AI",url:"https://coursera.org/learn/generative-ai-for-everyone",icon:"🤖",free:true,desc:"Andrew Ng teaches AI for non-technical learners"},
+    {name:"ChatGPT Prompt Engineering",provider:"DeepLearning.AI",url:"https://learn.deeplearning.ai/chatgpt-prompt-eng",icon:"⚡",free:true,desc:"Master prompt engineering for AI agents"},
+    {name:"Microsoft AI Skills",provider:"Microsoft Learn",url:"https://learn.microsoft.com/ai",icon:"💻",free:true,desc:"AI + Microsoft Office integration skills"},
+    {name:"AI For Everyone",provider:"Coursera / Andrew Ng",url:"https://coursera.org/learn/ai-for-everyone",icon:"🌟",free:true,desc:"Non-technical AI fundamentals course"},
+    {name:"Elements of AI",provider:"University of Helsinki",url:"https://elementsofai.com",icon:"🧠",free:true,desc:"Free online AI course for beginners"},
+    {name:"Intro to Generative AI",provider:"Google Cloud",url:"https://cloudskillsboost.google/course_templates/536",icon:"☁️",free:true,desc:"Google Cloud intro to generative AI"},
+    {name:"fast.ai Practical AI",provider:"fast.ai",url:"https://fast.ai",icon:"🚀",free:true,desc:"Practical deep learning for everyone"},
+    {name:"Excel AI Features",provider:"Microsoft Learn",url:"https://support.microsoft.com/excel",icon:"📊",free:true,desc:"AI-powered Excel skills and Copilot"},
+    {name:"LinkedIn AI Learning",provider:"LinkedIn Learning",url:"https://linkedin.com/learning/topics/ai",icon:"💼",free:false,desc:"Professional AI courses for career growth"},
+  ];
+  const social=[
+    {name:"TikTok",url:"https://tiktok.com",icon:"🎵",color:"#ff0050"},
+    {name:"YouTube",url:"https://youtube.com",icon:"▶️",color:"#ff0000"},
+    {name:"Instagram",url:"https://instagram.com",icon:"📸",color:"#e1306c"},
+    {name:"LinkedIn",url:"https://linkedin.com",icon:"💼",color:"#0077b5"},
+    {name:"Facebook",url:"https://facebook.com",icon:"👥",color:"#1877f2"},
+    {name:"X / Twitter",url:"https://x.com",icon:"🐦",color:"#1da1f2"},
+  ];
+  const [tab,setTab]=React.useState("courses");
+  return React.createElement("div",{style:{height:"100%",overflowY:"auto",padding:"16px 12px 80px"}},
+    React.createElement("h2",{style:{color:"#fff",fontSize:20,fontWeight:800,marginBottom:4}},"AI Learning Hub"),
+    React.createElement("p",{style:{color:"rgba(255,255,255,0.4)",fontSize:12,marginBottom:16}},"Free courses to build your AI skills"),
+    React.createElement("div",{style:{display:"flex",gap:8,marginBottom:16}},
+      ["courses","social"].map(t=>React.createElement("button",{key:t,onClick:()=>setTab(t),style:{padding:"8px 16px",borderRadius:20,border:"none",background:tab===t?"linear-gradient(135deg,#a855f7,#7c3aed)":"rgba(255,255,255,0.07)",color:tab===t?"#fff":"rgba(255,255,255,0.5)",fontSize:12,fontWeight:600,cursor:"pointer"}},t==="courses"?"📚 AI Courses":"📱 Social Media"))
+    ),
+    tab==="courses"?React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+      courses.map(c=>React.createElement("a",{key:c.name,href:c.url,target:"_blank",rel:"noopener noreferrer",style:{textDecoration:"none"}},
+        React.createElement("div",{style:{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(168,85,247,0.2)",borderRadius:16,padding:"14px 16px",display:"flex",alignItems:"flex-start",gap:12}},
+          React.createElement("div",{style:{fontSize:28,minWidth:36}}),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:4}},
+              React.createElement("span",{style:{color:"#fff",fontWeight:700,fontSize:14}},""+c.icon+" "+c.name),
+              c.free&&React.createElement("span",{style:{background:"rgba(34,197,94,0.15)",color:"#22c55e",fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20}},"FREE")
+            ),
+            React.createElement("div",{style:{color:"rgba(168,85,247,0.8)",fontSize:11,marginBottom:4}},""+c.provider),
+            React.createElement("div",{style:{color:"rgba(255,255,255,0.4)",fontSize:12}},""+c.desc)
+          ),
+          React.createElement("span",{style:{color:"rgba(168,85,247,0.6)",fontSize:18}},"→")
+        )
+      ))
+    ):React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+      social.map(s=>React.createElement("a",{key:s.name,href:s.url,target:"_blank",rel:"noopener noreferrer",style:{textDecoration:"none"}},
+        React.createElement("div",{style:{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(168,85,247,0.15)",borderRadius:16,padding:16,textAlign:"center"}},
+          React.createElement("div",{style:{fontSize:32,marginBottom:8}},""+s.icon),
+          React.createElement("div",{style:{color:"#fff",fontWeight:700,fontSize:14}},""+s.name),
+          React.createElement("div",{style:{color:s.color,fontSize:11,marginTop:4}},"Open "+s.name+" →")
+        )
+      ))
     )
   );
 }

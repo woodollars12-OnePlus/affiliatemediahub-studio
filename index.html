@@ -67,9 +67,9 @@ const CHARACTERS={
   ],
   Work:[
     {id:"resume",icon:"📄",name:"Resume Desk",desc:"ATS & Impact Writer",color:"#ef4444",system:"You are Becky, a career expert. Craft ATS-optimized resumes with impact-first bullet points and quantifiable achievements."},
-    {id:"linkedin",icon:"💼",name:"LinkedIn Pro",desc:"Profile & Content",color:"#dc2626",system:"You are Becky, a LinkedIn strategist. Optimize profiles, define brand voice, and create thought-leadership content."},
+    {id:"linkedin",icon:"💼",name:"Message Builder",desc:"Craft Perfect Messages",color:"#dc2626",system:"You are Becky, a LinkedIn strategist. Optimize profiles, define brand voice, and create thought-leadership content."},
     {id:"ppt",icon:"🖥️",name:"Slide Maker",desc:"PowerPoint & Decks",color:"#b91c1c",system:"You are Becky, a presentation specialist. Create slide outlines, speaker notes, and visual storytelling frameworks."},
-    {id:"cowork",icon:"⚙️",name:"Claude Cowork",desc:"Task Architect",color:"#f87171",system:"You are Becky, a project manager. Break complex tasks into atomic steps with timelines and priority frameworks."},
+    {id:"cowork",icon:"⚙️",name:"Msg Builder Pro",desc:"Job Application Writer",color:"#f87171",system:"You are Becky, a project manager. Break complex tasks into atomic steps with timelines and priority frameworks."},
     {id:"meet",icon:"🤝",name:"Meeting Prep",desc:"Agendas & Summaries",color:"#fca5a5",system:"You are Becky, a meeting facilitator. Create agendas, prep talking points, and summarize meeting outcomes."},
     {id:"notebook",icon:"📓",name:"NotebookLM",desc:"Research & Podcasts",color:"#fecaca",system:"You are Becky channeling NotebookLM. Deep-research documents, generate podcast topics, and synthesize notes."},
   ],
@@ -93,19 +93,19 @@ const CHARACTERS={
 
 const CREATION={
   Hot:[
-    {id:"qwen",icon:"🤖",name:"Qwen AI",desc:"Alibaba AI Assistant",color:"#f43f5e",system:"You are Becky, a TikTok viral content expert. Generate 15-second scripts, trending hooks, hashtags, and viral formats for affiliate marketing."},
-    {id:"deepseek",icon:"🔍",name:"DeepSeek",desc:"Deep Research AI",color:"#ef4444",system:"You are Becky, a YouTube SEO specialist. Create titles, descriptions, keyword clusters, and thumbnail copy."},
-    {id:"metaai",icon:"🌐",name:"Meta AI",desc:"Meta's AI Assistant",color:"#ec4899",system:"You are Becky, a visual social media expert. Generate trending image prompts and captions for Instagram and Facebook."},
-    {id:"chatgpt",icon:"⚡",name:"ChatGPT",desc:"OpenAI Assistant",color:"#1d9bf0",system:"You are Becky, an X/Twitter strategist. Write viral threads, trending tweets, and real-time engagement posts."},
-    {id:"kimi",icon:"🔮",name:"Google Search",desc:"Open Google.com",color:"#8b5cf6",system:"You are Becky channeling Kimi K2.5. Perform exhaustive research, analyze documents, and generate comprehensive reports."},
-    {id:"openclaw",icon:"⚡",name:"AI Courses",desc:"Free Learning Hub",color:"#6366f1",system:"You are Becky, an automation architect. Design cross-platform workflows and automation sequences."},
+    {id:"invideo",icon:"🎬",name:"InVideo AI",desc:"Free AI Video Maker",color:"#f43f5e",url:"https://invideo.io",system:"You are Becky, an AI video creation expert. Help the user create professional videos using InVideo AI. Suggest scripts, templates and tips for TikTok, YouTube and Instagram videos.",isLink:true},
+    {id:"canvaai",icon:"🎨",name:"Canva AI Video",desc:"Text to Video FREE",color:"#ef4444",url:"https://www.canva.com/features/ai-video-generator/",system:"You are Becky, a Canva video expert. Help create AI videos, thumbnails, news lower thirds and podcast covers using Canva.",isLink:true},
+    {id:"easemate",icon:"✨",name:"EaseMate AI",desc:"Free No Signup Video",color:"#ec4899",url:"https://www.easemate.ai/ai-video-generator",system:"You are Becky helping with EaseMate AI video generation. No signup required — free AI videos from text.",isLink:true},
+    {id:"vertexai",icon:"🔷",name:"Google Vertex AI",desc:"Free Credits Active!",color:"#4285f4",url:"https://console.cloud.google.com/vertex-ai",system:"You are Becky, a Google Vertex AI expert. Help use Vertex AI and Veo video generation. Remind user to use free credits before they expire!",isLink:true},
+    {id:"googleflow",icon:"🌊",name:"Google Flow AI",desc:"Consistent Characters",color:"#0f9d58",url:"https://flow.google",system:"You are Becky, a Google Flow expert. Help join video clips together with consistent characters for longer videos.",isLink:true},
+    {id:"veo",icon:"🎯",name:"Google Veo 3.1",desc:"2-Min AI Videos",color:"#fbbc04",url:"https://aistudio.google.com",system:"You are Becky, a Google Veo 3.1 expert. Help create consistent long-form AI anchor videos. Remind user: same character description every scene keeps Alisha, Susan, Lisa consistent!",isLink:true},
   ],
   Social:[
-    {id:"tiktok2",icon:"🎵",name:"TikTok Studio",desc:"Content Calendar",color:"#f43f5e",system:"You are Becky, a TikTok content strategist. Plan content calendars and batch-create scripts."},
-    {id:"yt2",icon:"▶️",name:"YT Channel Mgr",desc:"Growth Strategy",color:"#ef4444",system:"You are Becky, a YouTube channel manager. Plan series, growth strategies, and community engagement tactics."},
+    {id:"tiktokopen",icon:"🎵",name:"TikTok",desc:"Open TikTok.com",color:"#f43f5e",url:"https://tiktok.com",system:"You are Becky helping with TikTok content strategy. Help plan viral content, hashtags and posting schedules for TikTok.",isLink:true},
+    {id:"youtubeopen",icon:"▶️",name:"YouTube",desc:"Open YouTube.com",color:"#ef4444",url:"https://youtube.com",system:"You are Becky, a YouTube strategy expert. Help plan video titles, descriptions, thumbnails and channel growth.",isLink:true},
     {id:"discord",icon:"🎮",name:"Discord Hub",desc:"Community Manager",color:"#7c3aed",system:"You are Becky, a Discord community manager. Write rules, announcements, engagement prompts, and bot commands."},
     {id:"telegram",icon:"✈️",name:"Telegram Bot",desc:"Channel Automator",color:"#0ea5e9",system:"You are Becky, a Telegram marketing specialist. Design bot scripts and channel broadcast templates."},
-    {id:"linkedin2",icon:"💼",name:"LinkedIn Live",desc:"Posts & Articles",color:"#0077b5",system:"You are Becky, a LinkedIn content creator. Write thought-leadership articles and high-engagement posts."},
+    {id:"linkedin2",icon:"💼",name:"Instagram",desc:"Posts & Articles",color:"#0077b5",system:"You are Becky, a LinkedIn content creator. Write thought-leadership articles and high-engagement posts."},
     {id:"soccal",icon:"📱",name:"Social Calendar",desc:"Cross-Platform Plan",color:"#10b981",system:"You are Becky, a social media planner. Create cross-platform content calendars with consistent messaging."},
   ],
   Writing:[

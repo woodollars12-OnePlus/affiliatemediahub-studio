@@ -775,6 +775,7 @@ function VideoStudioPage(){
   const[idea,setIdea]=React.useState("");
   const[script,setScript]=React.useState("");
   const[loading,setLoading]=React.useState(false);
+  const[scriptType,setScriptType]=React.useState("veo");
 
   const tools=[
     {
@@ -978,8 +979,6 @@ function VideoStudioPage(){
       ]
     },
   ];
-
-  const[scriptType,setScriptType]=React.useState("veo");
 
   const generateScript=async()=>{
     if(!idea.trim())return;
@@ -1242,6 +1241,10 @@ function App(){
       page==="home"&&React.createElement(HomePage,{onOpenBecky:()=>setBecky(true)}),
       page==="characters"&&React.createElement(CatPage,{data:CHARACTERS,accentColor:"#a855f7",title:"Characters"}),
       page==="creation"&&React.createElement(CatPage,{data:CREATION,accentColor:"#6366f1",title:"Creation"}),
+      page==="studio"&&React.createElement(VideoStudioPage,null),
+      page==="cast"&&React.createElement(CastPage,null),
+      page==="memory"&&React.createElement(MemoryPage,null),
+      page==="learn"&&React.createElement(LearnPage,null),
       page==="history"&&React.createElement(HistoryPage,null)
     ),
     // Bottom nav

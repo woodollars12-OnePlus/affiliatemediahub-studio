@@ -65,6 +65,17 @@ const CHARACTERS={
     {id:"mkts",icon:"📈",name:"Marketing 101",desc:"Affiliate Mastery",color:"#fcd34d",system:"You are Becky, an affiliate marketing educator. Teach traffic, conversion, funnels, and commission strategies."},
     {id:"lang",icon:"🗣️",name:"Language Lab",desc:"Fluency & Pacing",color:"#fde68a",system:"You are Becky, a language learning coach. Help with English fluency, pronunciation, and conversational pacing."},
   ],
+  AITools:[
+    {id:"chatgpt_agent",icon:"⚡",name:"ChatGPT Helper",desc:"OpenAI Prompts",color:"#10a37f",system:"You are Becky helping the user get the most out of ChatGPT. Suggest powerful prompts, explain features, and help them use ChatGPT effectively for their videos and affiliate work."},
+    {id:"qwen_agent",icon:"🔮",name:"Qwen AI Guide",desc:"Alibaba AI Tips",color:"#f43f5e",system:"You are Becky explaining how to use Qwen AI by Alibaba. Help with prompts and use cases for content creation."},
+    {id:"perplexity",icon:"🔍",name:"Perplexity AI",desc:"AI Search Engine",color:"#1fb8cd",url:"https://perplexity.ai",isLink:true,system:"You are Becky helping use Perplexity AI for research. Great for finding current news for Susan, Alisha and Lisa shows!"},
+    {id:"gemini_agent",icon:"✨",name:"Gemini Guide",desc:"Google AI Tips",color:"#4285f4",system:"You are Becky, a Google Gemini expert. Help the user use Gemini AI effectively. Remember — Gemini powers Becky herself through the API key!"},
+    {id:"metaai_agent",icon:"🌐",name:"Meta AI Guide",desc:"Facebook AI Tips",color:"#0866ff",system:"You are Becky helping use Meta AI inside Facebook, Instagram and WhatsApp. Show how to access it and use it for content creation."},
+    {id:"deepseek_agent",icon:"🧠",name:"DeepSeek Guide",desc:"Research & Analysis",color:"#7c3aed",system:"You are Becky helping use DeepSeek AI for deep research and analysis. Great for finding information for the news shows."},
+    {id:"grok4_agent",icon:"⚡",name:"Grok 4",desc:"xAI by Elon Musk",color:"#1da1f2",url:"https://grok.com",isLink:true,system:"You are Becky helping use Grok 4 by xAI. Grok 4 is great for generating AI anchor videos of Susan, Alisha, Lisa and Paul Baby Boss. Provide exact prompts to keep characters consistent."},
+    {id:"sora_agent",icon:"🎥",name:"Sora",desc:"OpenAI Video AI",color:"#10a37f",url:"https://sora.com",isLink:true,system:"You are Becky helping use Sora by OpenAI. Sora generates realistic AI videos. Help the user create professional video content for their shows."},
+    {id:"claude_agent",icon:"🟠",name:"Claude AI",desc:"By Anthropic",color:"#d97706",url:"https://claude.ai",isLink:true,system:"You are Becky helping use Claude by Anthropic. Claude is excellent for writing, coding, analysis and building apps — just like we built The Hub Engine together!"},
+  ],
   Work:[
     {id:"resume",icon:"📄",name:"Resume Desk",desc:"ATS & Impact Writer",color:"#ef4444",system:"You are Becky, a career expert. Craft ATS-optimized resumes with impact-first bullet points and quantifiable achievements."},
     {id:"linkedin",icon:"💼",name:"Message Builder",desc:"Craft Perfect Messages",color:"#dc2626",system:"You are Becky, a LinkedIn strategist. Optimize profiles, define brand voice, and create thought-leadership content."},
@@ -99,6 +110,9 @@ const CREATION={
     {id:"vertexai",icon:"🔷",name:"Google Vertex AI",desc:"Free Credits Active!",color:"#4285f4",url:"https://console.cloud.google.com/vertex-ai",system:"You are Becky, a Google Vertex AI expert. Help use Vertex AI and Veo video generation. Remind user to use free credits before they expire!",isLink:true},
     {id:"googleflow",icon:"🌊",name:"Google Flow AI",desc:"Consistent Characters",color:"#0f9d58",url:"https://flow.google",system:"You are Becky, a Google Flow expert. Help join video clips together with consistent characters for longer videos.",isLink:true},
     {id:"veo",icon:"🎯",name:"Google Veo 3.1",desc:"2-Min AI Videos",color:"#fbbc04",url:"https://aistudio.google.com",system:"You are Becky, a Google Veo 3.1 expert. Help create consistent long-form AI anchor videos. Remind user: same character description every scene keeps Alisha, Susan, Lisa consistent!",isLink:true},
+    {id:"grok4",icon:"⚡",name:"Grok 4 AI",desc:"Your Anchor Video Maker",color:"#1da1f2",url:"https://grok.com",system:"You are Becky, a Grok 4 AI video expert. Help John generate consistent AI anchor videos of Susan, Alisha, Lisa and Paul Baby Boss. Provide exact prompts to keep characters consistent across clips.",isLink:true},
+    {id:"sora_create",icon:"🎥",name:"Sora",desc:"OpenAI Video Generator",color:"#10a37f",url:"https://sora.com",system:"You are Becky helping create videos with Sora by OpenAI. Generate cinematic AI videos for Susan Monday show, Alisha Wednesday show, Lisa Friday show and Paul Baby Boss.",isLink:true},
+    {id:"claude_create",icon:"🟠",name:"Claude AI",desc:"Write • Code • Build",color:"#d97706",url:"https://claude.ai",system:"You are Becky helping use Claude by Anthropic for writing scripts, building apps and solving problems. Claude is what helped build The Hub Engine!",isLink:true},
   ],
   Social:[
     {id:"tiktokopen",icon:"🎵",name:"TikTok",desc:"Open TikTok.com",color:"#f43f5e",url:"https://tiktok.com",system:"You are Becky helping with TikTok content strategy. Help plan viral content, hashtags and posting schedules for TikTok.",isLink:true},
@@ -488,9 +502,13 @@ function HistoryPage(){
 
 const NAV=[
   {id:"home",label:"Home",icon:"🏠"},
-  {id:"characters",label:"Characters",icon:"👥"},
-  {id:"creation",label:"Creation",icon:"✨"},
-  {id:"history",label:"History",icon:"📋"},
+  {id:"characters",label:"Agents",icon:"🤖"},
+  {id:"creation",label:"Create",icon:"✨"},
+  {id:"studio",label:"Studio",icon:"🎬"},
+  {id:"cast",label:"Cast",icon:"🎭"},
+  {id:"affiliate",label:"Affiliate",icon:"💰"},
+  {id:"memory",label:"Memory",icon:"🧠"},
+  {id:"learn",label:"Learn",icon:"📚"},
 ];
 
 
@@ -537,6 +555,248 @@ function APIKeyScreen({onSave}){
 
 
 
+
+
+function AffiliatePage(){
+  const[tab,setTab]=React.useState("links");
+  const[links,setLinks]=React.useState(()=>{
+    try{return JSON.parse(localStorage.getItem("hub_affiliate_links")||"[]");}
+    catch{return[];}
+  });
+  const[newLink,setNewLink]=React.useState({name:"",url:"",category:"",commission:""});
+  const[landing,setLanding]=React.useState({headline:"",subhead:"",product:"",benefit1:"",benefit2:"",benefit3:"",cta:""});
+  const[generatedPage,setGeneratedPage]=React.useState("");
+  const[loading,setLoading]=React.useState(false);
+  const[copied,setCopied]=React.useState("");
+
+  const saveLinks=(updated)=>{
+    setLinks(updated);
+    localStorage.setItem("hub_affiliate_links",JSON.stringify(updated));
+  };
+
+  const addLink=()=>{
+    if(!newLink.name||!newLink.url)return;
+    const updated=[...links,{...newLink,id:Date.now()}];
+    saveLinks(updated);
+    setNewLink({name:"",url:"",category:"",commission:""});
+  };
+
+  const deleteLink=(id)=>saveLinks(links.filter(l=>l.id!==id));
+
+  const copyText=(text,id)=>{
+    navigator.clipboard.writeText(text);
+    setCopied(id);
+    setTimeout(()=>setCopied(""),2000);
+  };
+
+  const generateLanding=async()=>{
+    if(!landing.product)return;
+    setLoading(true);setGeneratedPage("");
+    const key=localStorage.getItem("hub_api_key")||"";
+    if(!key){setGeneratedPage("⚠️ Please enter your API key first.");setLoading(false);return;}
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
+    const prompt=`You are Becky, a professional landing page copywriter for AffiliateMediaHub.
+
+Create a complete, high-converting affiliate landing page for:
+Product/Service: ${landing.product}
+Headline idea: ${landing.headline||"create a powerful one"}
+Subheadline: ${landing.subhead||"create one"}
+Key benefit 1: ${landing.benefit1||"you choose"}
+Key benefit 2: ${landing.benefit2||"you choose"}  
+Key benefit 3: ${landing.benefit3||"you choose"}
+Call to action: ${landing.cta||"Get Started Free"}
+
+Write the complete landing page copy in this format:
+
+🎯 HEADLINE: [Attention-grabbing headline]
+
+💡 SUBHEADLINE: [Supporting statement]
+
+😤 THE PROBLEM: [2-3 sentences about the pain point]
+
+✅ THE SOLUTION: [How this product solves it]
+
+🌟 3 KEY BENEFITS:
+1. [Benefit with explanation]
+2. [Benefit with explanation]
+3. [Benefit with explanation]
+
+💬 SOCIAL PROOF: [Fake but realistic testimonial]
+
+🔥 CALL TO ACTION: [CTA button text + urgency statement]
+
+📝 FULL PAGE HTML: Write a complete beautiful dark-themed HTML landing page with all the above content, purple gradient buttons, modern design. Include the affiliate link placeholder [YOUR_AFFILIATE_LINK_HERE].`;
+
+    try{
+      const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:2000,temperature:0.9}})});
+      const d=await r.json();
+      if(d.error){setGeneratedPage("⚠️ "+d.error.message);}
+      else{setGeneratedPage(d.candidates?.[0]?.content?.parts?.[0]?.text||"No response");}
+    }catch(e){setGeneratedPage("⚠️ Error: "+e.message);}
+    setLoading(false);
+  };
+
+  const categories=["AI Tools","Marketing","Education","Software","Health","Finance","Other"];
+
+  return React.createElement("div",{style:{height:"100%",overflowY:"auto",padding:"16px 12px 80px"}},
+    // Header
+    React.createElement("div",{style:{marginBottom:16}},
+      React.createElement("h2",{style:{color:"#fff",fontSize:20,fontWeight:800,margin:"0 0 4px"}},"💰 Affiliate Hub"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.4)",fontSize:12,margin:0}},"Manage links • Build landing pages • Track commissions")
+    ),
+
+    // Tabs
+    React.createElement("div",{style:{display:"flex",gap:6,marginBottom:16}},
+      ["links","landing","scripts"].map(t=>React.createElement("button",{key:t,onClick:()=>setTab(t),style:{flex:1,padding:"10px 6px",borderRadius:12,border:"none",background:tab===t?"linear-gradient(135deg,#a855f7,#7c3aed)":"rgba(255,255,255,0.07)",color:tab===t?"#fff":"rgba(255,255,255,0.5)",fontSize:11,fontWeight:700,cursor:"pointer"}},t==="links"?"🔗 My Links":t==="landing"?"🏠 Landing Page":"📜 Scripts"))
+    ),
+
+    // ── LINKS TAB ──
+    tab==="links"&&React.createElement("div",null,
+      // Add new link form
+      React.createElement("div",{style:{background:"rgba(168,85,247,0.08)",border:"1px solid rgba(168,85,247,0.25)",borderRadius:16,padding:14,marginBottom:16}},
+        React.createElement("div",{style:{color:"#a855f7",fontWeight:700,fontSize:13,marginBottom:10}},"➕ Add Affiliate Link"),
+        React.createElement("input",{value:newLink.name,onChange:e=>setNewLink({...newLink,name:e.target.value}),placeholder:"Product name (e.g. InVideo AI)",style:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"10px 12px",color:"#fff",fontSize:13,marginBottom:8,boxSizing:"border-box",outline:"none"}}),
+        React.createElement("input",{value:newLink.url,onChange:e=>setNewLink({...newLink,url:e.target.value}),placeholder:"Your affiliate URL",style:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"10px 12px",color:"#fff",fontSize:13,marginBottom:8,boxSizing:"border-box",outline:"none"}}),
+        React.createElement("div",{style:{display:"flex",gap:8,marginBottom:10}},
+          React.createElement("input",{value:newLink.commission,onChange:e=>setNewLink({...newLink,commission:e.target.value}),placeholder:"Commission %",style:{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"10px 12px",color:"#fff",fontSize:13,outline:"none"}}),
+          React.createElement("select",{value:newLink.category,onChange:e=>setNewLink({...newLink,category:e.target.value}),style:{flex:1,background:"rgba(20,20,35,0.9)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"10px 12px",color:"#fff",fontSize:13,outline:"none"}},
+            React.createElement("option",{value:""},"Category..."),
+            categories.map(c=>React.createElement("option",{key:c,value:c},""+c))
+          )
+        ),
+        React.createElement("button",{onClick:addLink,style:{width:"100%",padding:12,borderRadius:12,border:"none",background:"linear-gradient(135deg,#a855f7,#7c3aed)",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}},"Save Link")
+      ),
+
+      // Links list
+      links.length===0?
+        React.createElement("div",{style:{textAlign:"center",padding:32,color:"rgba(255,255,255,0.3)",fontSize:14}},"No affiliate links yet — add your first one above! 💜"):
+        React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
+          links.map(link=>React.createElement("div",{key:link.id,style:{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:12}},
+            React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}},
+              React.createElement("div",null,
+                React.createElement("div",{style:{color:"#fff",fontWeight:700,fontSize:14}},""+link.name),
+                React.createElement("div",{style:{color:"rgba(168,85,247,0.8)",fontSize:11,marginTop:2}},(link.category||"Uncategorized")+(link.commission?" • "+link.commission+"% commission":"")),  
+              ),
+              React.createElement("button",{onClick:()=>deleteLink(link.id),style:{background:"rgba(239,68,68,0.2)",border:"none",color:"#ef4444",padding:"4px 8px",borderRadius:8,fontSize:11,cursor:"pointer"}},"Delete")
+            ),
+            React.createElement("div",{style:{display:"flex",gap:6}},
+              React.createElement("div",{style:{flex:1,background:"rgba(0,0,0,0.3)",borderRadius:8,padding:"6px 10px",color:"rgba(255,255,255,0.4)",fontSize:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},""+link.url),
+              React.createElement("button",{onClick:()=>copyText(link.url,"link_"+link.id),style:{background:copied==="link_"+link.id?"rgba(34,197,94,0.3)":"rgba(168,85,247,0.2)",border:"none",color:copied==="link_"+link.id?"#22c55e":"#a855f7",padding:"6px 12px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700}},copied==="link_"+link.id?"✅":"Copy"),
+              React.createElement("a",{href:link.url,target:"_blank",rel:"noopener noreferrer",style:{background:"rgba(255,255,255,0.07)",border:"none",color:"rgba(255,255,255,0.5)",padding:"6px 12px",borderRadius:8,fontSize:11,textDecoration:"none"}},"Open")
+            )
+          ))
+        )
+    ),
+
+    // ── LANDING PAGE TAB ──
+    tab==="landing"&&React.createElement("div",null,
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:12,margin:"0 0 12px"}},"Describe your product and Becky builds a full landing page! 🏠"),
+      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8,marginBottom:12}},
+        React.createElement("input",{value:landing.product,onChange:e=>setLanding({...landing,product:e.target.value}),placeholder:"What product are you promoting? (e.g. InVideo AI video maker)",style:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(168,85,247,0.3)",borderRadius:12,padding:"12px",color:"#fff",fontSize:13,boxSizing:"border-box",outline:"none"}}),
+        React.createElement("input",{value:landing.headline,onChange:e=>setLanding({...landing,headline:e.target.value}),placeholder:"Headline idea (optional — Becky will write one)",style:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"12px",color:"#fff",fontSize:13,boxSizing:"border-box",outline:"none"}}),
+        React.createElement("input",{value:landing.benefit1,onChange:e=>setLanding({...landing,benefit1:e.target.value}),placeholder:"Key benefit 1 (optional)",style:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"12px",color:"#fff",fontSize:13,boxSizing:"border-box",outline:"none"}}),
+        React.createElement("input",{value:landing.benefit2,onChange:e=>setLanding({...landing,benefit2:e.target.value}),placeholder:"Key benefit 2 (optional)",style:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"12px",color:"#fff",fontSize:13,boxSizing:"border-box",outline:"none"}}),
+        React.createElement("input",{value:landing.cta,onChange:e=>setLanding({...landing,cta:e.target.value}),placeholder:"Call to action button text (e.g. Try Free Today)",style:{width:"100%",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,padding:"12px",color:"#fff",fontSize:13,boxSizing:"border-box",outline:"none"}})
+      ),
+      React.createElement("button",{onClick:generateLanding,disabled:loading||!landing.product,style:{width:"100%",padding:14,borderRadius:14,border:"none",background:loading?"rgba(168,85,247,0.3)":"linear-gradient(135deg,#a855f7,#7c3aed)",color:"#fff",fontSize:15,fontWeight:700,cursor:loading?"not-allowed":"pointer",marginBottom:16}},loading?"🏗️ Becky is building your page...":"🏠 Build My Landing Page"),
+      generatedPage&&React.createElement("div",{style:{background:"rgba(168,85,247,0.06)",border:"1px solid rgba(168,85,247,0.25)",borderRadius:14,padding:14}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
+          React.createElement("span",{style:{color:"#a855f7",fontWeight:700,fontSize:13}},"🏠 Your Landing Page"),
+          React.createElement("button",{onClick:()=>copyText(generatedPage,"landing"),style:{background:copied==="landing"?"rgba(34,197,94,0.3)":"rgba(168,85,247,0.2)",border:"none",color:copied==="landing"?"#22c55e":"#a855f7",padding:"6px 14px",borderRadius:8,fontSize:12,cursor:"pointer",fontWeight:700}},copied==="landing"?"✅ Copied!":"Copy All")
+        ),
+        React.createElement("p",{style:{color:"rgba(255,255,255,0.75)",fontSize:12,lineHeight:1.8,margin:0,whiteSpace:"pre-wrap"}},""+generatedPage)
+      )
+    ),
+
+    // ── SCRIPTS TAB ──
+    tab==="scripts"&&React.createElement("div",null,
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:12,margin:"0 0 12px"}},"Ready-made affiliate video script templates for your shows 🎬"),
+      [
+        {title:"Susan — Monday AI News",icon:"👱‍♀️",color:"#f59e0b",script:`🎬 SUSAN — MONDAY MORNING AI NEWS SCRIPT
+
+[SCENE 1 — HOOK]
+"Good morning! I'm Susan and THIS is your Monday AI News briefing. Today we're covering the AI tool that's helping regular people make money online — completely free."
+
+[SCENE 2 — PROBLEM]  
+"Most people waste hours trying to figure out video creation. They spend money on tools that don't work. Sound familiar?"
+
+[SCENE 3 — SOLUTION]
+"But today I'm showing you [PRODUCT NAME] — the tool that changed everything for me. I'll put the link below."
+
+[SCENE 4 — BENEFITS]
+"With [PRODUCT NAME] you can: create professional videos in minutes, no experience needed, and it's completely free to start."
+
+[SCENE 5 — CTA]
+"The link is in my bio and description. Try it free today — and I'll see you Wednesday with more AI news. I'm Susan — have a powerful Monday!"
+
+🔗 PASTE YOUR AFFILIATE LINK IN BIO`},
+        {title:"Alisha — Wednesday Deep Dive",icon:"👩‍💼",color:"#ec4899",script:`🎬 ALISHA — WEDNESDAY AFFILIATE REVIEW SCRIPT
+
+[SCENE 1 — HOOK]
+"Hey everyone, Alisha here! Wednesday means deep dive time — and today I'm reviewing the AI tool everyone's talking about."
+
+[SCENE 2 — CREDIBILITY]
+"I've tested over 50 AI tools so you don't have to waste your time or money. And [PRODUCT NAME] actually shocked me."
+
+[SCENE 3 — REVIEW]
+"Here's what makes it different: [BENEFIT 1], [BENEFIT 2], and my favorite — [BENEFIT 3]."
+
+[SCENE 4 — PROOF]
+"I've been using it for [X weeks] and the results speak for themselves. Real people are getting real results."
+
+[SCENE 5 — CTA]
+"Link is in my bio — they have a free trial so you have nothing to lose. Try it and tell me what you think! See you Friday!"
+
+🔗 PASTE YOUR AFFILIATE LINK IN BIO`},
+        {title:"Lisa — Friday Wrap Up",icon:"👩‍🦱",color:"#a855f7",script:`🎬 LISA — FRIDAY AFFILIATE WRAP UP SCRIPT
+
+[SCENE 1 — HOOK]
+"TGIF! Lisa here with your Friday AI wrap up — and I saved the BEST for last this week."
+
+[SCENE 2 — WEEK RECAP]
+"This week we covered AI news with Susan, did a deep dive with Alisha — but today I'm giving you the tool that ties it all together."
+
+[SCENE 3 — PRODUCT PITCH]
+"[PRODUCT NAME] is the missing piece for anyone trying to build income online with AI. Here's why it works..."
+
+[SCENE 4 — URGENCY]
+"They're offering a special deal right now — I don't know how long it lasts. The link is in my bio."
+
+[SCENE 5 — WEEKEND CTA]
+"Use this weekend to set it up. Monday Susan will be back with more news. Have an amazing weekend — I'm Lisa, see you next week!"
+
+🔗 PASTE YOUR AFFILIATE LINK IN BIO`},
+        {title:"Paul Baby Boss — Comedy Pitch",icon:"👶",color:"#22c55e",script:`🎬 PAUL BABY BOSS — COMEDY AFFILIATE SCRIPT
+
+[SCENE 1 — HOOK — serious baby face]
+"Let's talk business. Real business. Baby business."
+
+[SCENE 2 — PROBLEM — deadpan]
+"You're spending too much money on things that don't work. I know. I've analyzed the data. With my tiny hands."
+
+[SCENE 3 — SOLUTION — still serious]
+"So I negotiated — with my considerable business expertise — a solution. It's called [PRODUCT NAME]. You're welcome."
+
+[SCENE 4 — BENEFITS — stern look]
+"It does [BENEFIT 1]. It does [BENEFIT 2]. And most importantly — it's FREE to start. Which is the kind of price point I personally approve of."
+
+[SCENE 5 — CTA — tiny point at camera]
+"Link. Is. In. Bio. Don't make me come down there. Baby Boss out."
+
+🔗 PASTE YOUR AFFILIATE LINK IN BIO — THIS WILL GO VIRAL 😂`},
+      ].map(s=>React.createElement("div",{key:s.title,style:{background:"rgba(255,255,255,0.04)",border:`1px solid ${s.color}30`,borderRadius:16,padding:14,marginBottom:10}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+            React.createElement("span",{style:{fontSize:24}},""+s.icon),
+            React.createElement("span",{style:{color:"#fff",fontWeight:700,fontSize:13}},""+s.title)
+          ),
+          React.createElement("button",{onClick:()=>copyText(s.script,"script_"+s.title),style:{background:copied==="script_"+s.title?"rgba(34,197,94,0.3)":`${s.color}30`,border:"none",color:copied==="script_"+s.title?"#22c55e":s.color,padding:"6px 14px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700}},copied==="script_"+s.title?"✅ Copied!":"Copy")
+        ),
+        React.createElement("pre",{style:{color:"rgba(255,255,255,0.6)",fontSize:11,lineHeight:1.7,margin:0,whiteSpace:"pre-wrap",fontFamily:"inherit"}},""+s.script)
+      ))
+    )
+  );
+}
 
 function CastPage(){
   const[copied,setCopied]=React.useState("");
@@ -1240,6 +1500,7 @@ function App(){
       page==="characters"&&React.createElement(CatPage,{data:CHARACTERS,accentColor:"#a855f7",title:"Characters"}),
       page==="creation"&&React.createElement(CatPage,{data:CREATION,accentColor:"#6366f1",title:"Creation"}),
       page==="studio"&&React.createElement(VideoStudioPage,null),
+      page==="affiliate"&&React.createElement(AffiliatePage,null),
       page==="cast"&&React.createElement(CastPage,null),
       page==="memory"&&React.createElement(MemoryPage,null),
       page==="learn"&&React.createElement(LearnPage,null),

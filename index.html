@@ -217,16 +217,22 @@ function ChatPanel({agent,onClose}){
   const speak=(text)=>{
     if(!("speechSynthesis" in window))return;
     window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text.replace(/[*#_[\]]/g,"").substring(0,500));
-    u.rate=1.0;u.pitch=1.1;u.volume=1.0;
+    const clean=text.replace(/[*#_\[\]]/g,"").replace(/emoji/g,"").substring(0,600);
+    const u=new SpeechSynthesisUtterance(clean);
+    // Natural human-like voice settings
+    u.rate=0.88;u.pitch=1.0;u.volume=1.0;
     const tryVoice=()=>{
       const vs=window.speechSynthesis.getVoices();
-      const fv=vs.find(v=>v.name.includes("Google UK English Female"))
-        ||vs.find(v=>v.name.includes("Samantha"))
-        ||vs.find(v=>v.name.includes("Karen"))
+      // Best natural sounding female voices in priority order
+      const fv=vs.find(v=>v.name==="Samantha")
+        ||vs.find(v=>v.name==="Karen")
+        ||vs.find(v=>v.name==="Moira")
+        ||vs.find(v=>v.name==="Google US English")
+        ||vs.find(v=>v.name.includes("Google UK English Female"))
         ||vs.find(v=>v.name.includes("Zira"))
+        ||vs.find(v=>v.lang==="en-US"&&v.localService===true)
         ||vs.find(v=>v.lang==="en-US");
-      if(fv)u.voice=fv;
+      if(fv){u.voice=fv;}
     };
     if(window.speechSynthesis.getVoices().length===0){
       window.speechSynthesis.onvoiceschanged=()=>{tryVoice();window.speechSynthesis.speak(u);};
@@ -244,7 +250,6 @@ function ChatPanel({agent,onClose}){
     const reply=await askBecky(agent.system,history);
     setMsgs(m=>[...m,{role:"assistant",content:reply}]);
     setLoading(false);
-    // Becky speaks every response!
     speak(reply);
   };
 

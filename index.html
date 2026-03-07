@@ -183,8 +183,11 @@ async function askBecky(system,messages){
   const GOOGLE_API_KEY=localStorage.getItem("hub_api_key")||"";
   if(!GOOGLE_API_KEY)return"⚠️ No API key found. Please refresh and enter your Google AI Studio key.";
   const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GOOGLE_API_KEY}`;
+  // Load John's memory profile and inject into every conversation
+  const profile=localStorage.getItem("hub_user_profile")||"";
+  const profileContext=profile?`\n\nUSER PROFILE — Always remember this about the person you are talking to:\n${profile}`:"";
   const allMessages=[];
-  if(system)allMessages.push({role:"user",parts:[{text:"SYSTEM: "+system}]},{role:"model",parts:[{text:"Understood! I will follow these instructions."}]});
+  if(system)allMessages.push({role:"user",parts:[{text:"SYSTEM: "+system+profileContext}]},{role:"model",parts:[{text:"Understood! I know who I am talking to and will personalize every response accordingly."}]});
   messages.forEach(m=>allMessages.push({role:m.role==="assistant"?"model":"user",parts:[{text:m.content}]}));
   const r=await fetch(url,{
     method:"POST",
@@ -596,6 +599,7 @@ function HistoryPage(){
 
 const NAV=[
   {id:"home",label:"Home",icon:"🏠"},
+  {id:"profile",label:"Profile",icon:"👤"},
   {id:"characters",label:"Agents",icon:"🤖"},
   {id:"creation",label:"Create",icon:"✨"},
   {id:"studio",label:"Studio",icon:"🎬"},
@@ -606,6 +610,89 @@ const NAV=[
 ];
 
 
+
+
+function MyProfilePage(){
+  const[profile,setProfile]=React.useState(localStorage.getItem("hub_user_profile")||"");
+  const[saved,setSaved]=React.useState(false);
+  const defaultProfile=`Name: John Lanter
+Location: Orange, Texas
+Goal: Find work in Southeast Texas and build online income
+Job Background: 20+ years Lead Production Operator at Lion Elastomers (formerly Firestone Polymers) — forklift, conveyor systems, robotics, team supervision
+Shows: Lisa (Friday), Alisha (Wednesday), Susan (Monday), Paul Baby Boss (Thursday)
+App: The Hub Engine — 90 AI tools, Video Studio, Affiliate Hub, Live Voice Coach
+Learning: Marketing 101, Prompt Engineering, Affiliate Marketing, Funnels
+Online Goal: Affiliate marketing income to pay for Veo 3 video production
+Family: Wife, caring for 87-year-old sister-in-law daily
+Tone: Keep responses encouraging, practical and simple`;
+
+  const save=()=>{
+    localStorage.setItem("hub_user_profile",profile);
+    setSaved(true);
+    setTimeout(()=>setSaved(false),2500);
+  };
+
+  const loadDefault=()=>{
+    setProfile(defaultProfile);
+  };
+
+  const clear=()=>{
+    if(window.confirm("Clear your profile? Becky will not remember you.")){
+      localStorage.removeItem("hub_user_profile");
+      setProfile("");
+    }
+  };
+
+  return React.createElement("div",{style:{height:"100%",overflowY:"auto",padding:"16px 12px 100px"}},
+    React.createElement("div",{style:{marginBottom:16}},
+      React.createElement("h2",{style:{color:"#fff",fontSize:20,fontWeight:800,margin:"0 0 4px"}},"👤 My Profile — Becky's Memory"),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:13,margin:0}},"Becky reads this at the start of every conversation so she always knows who you are!")
+    ),
+    React.createElement("div",{style:{background:"rgba(168,85,247,0.08)",border:"1px solid rgba(168,85,247,0.3)",borderRadius:16,padding:16,marginBottom:16}},
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.7)",fontSize:13,margin:"0 0 12px",lineHeight:1.6}},
+        "✅ Once saved — Becky remembers you in EVERY conversation automatically!",
+        React.createElement("br",null),
+        "✅ Update anytime as your goals or situation changes.",
+        React.createElement("br",null),
+        "✅ The more detail you add — the smarter Becky becomes!"
+      ),
+      React.createElement("button",{
+        onClick:loadDefault,
+        style:{background:"rgba(168,85,247,0.3)",border:"1px solid rgba(168,85,247,0.5)",color:"#fff",borderRadius:10,padding:"8px 16px",fontSize:13,cursor:"pointer",marginRight:8}
+      },"⚡ Load John's Profile"),
+      React.createElement("button",{
+        onClick:clear,
+        style:{background:"rgba(239,68,68,0.2)",border:"1px solid rgba(239,68,68,0.3)",color:"#fff",borderRadius:10,padding:"8px 16px",fontSize:13,cursor:"pointer"}
+      },"🗑️ Clear Profile")
+    ),
+    React.createElement("textarea",{
+      value:profile,
+      onChange:e=>setProfile(e.target.value),
+      placeholder:"Tell Becky about yourself...\n\nExample:\nName: John\nLocation: Orange TX\nGoal: Find work and build affiliate income\nShows: Lisa, Alisha, Susan, Paul Baby Boss",
+      style:{
+        width:"100%",height:280,background:"rgba(255,255,255,0.05)",
+        border:"1px solid rgba(168,85,247,0.3)",borderRadius:12,
+        color:"#fff",fontSize:13,padding:12,resize:"vertical",
+        fontFamily:"inherit",lineHeight:1.6,boxSizing:"border-box"
+      }
+    }),
+    React.createElement("button",{
+      onClick:save,
+      style:{
+        width:"100%",marginTop:12,padding:"14px",
+        background:saved?"rgba(34,197,94,0.4)":"linear-gradient(135deg,#a855f7,#6366f1)",
+        border:"none",borderRadius:14,color:"#fff",
+        fontSize:16,fontWeight:700,cursor:"pointer",
+        boxShadow:saved?"0 0 20px rgba(34,197,94,0.4)":"0 4px 20px rgba(168,85,247,0.4)"
+      }
+    },saved?"✅ Saved! Becky Now Remembers You!":"💾 Save Profile — Activate Becky's Memory"),
+    saved&&React.createElement("div",{style:{
+      marginTop:12,padding:12,background:"rgba(34,197,94,0.15)",
+      border:"1px solid rgba(34,197,94,0.3)",borderRadius:12,
+      color:"#4ade80",fontSize:14,textAlign:"center"
+    }},"🎉 Becky will now remember you every single conversation!")
+  );
+}
 
 function PasswordScreen({onUnlock}){
   const[pw,setPw]=useState("");
@@ -1693,6 +1780,7 @@ function App(){
     // Page
     React.createElement("div",{style:{flex:1,overflowY:"auto",overflowX:"hidden"}},
       page==="home"&&React.createElement(HomePage,{onOpenBecky:()=>setBecky(true)}),
+      page==="profile"&&React.createElement(MyProfilePage,null),
       page==="characters"&&React.createElement(CatPage,{data:CHARACTERS,accentColor:"#a855f7",title:"Characters"}),
       page==="creation"&&React.createElement(CatPage,{data:CREATION,accentColor:"#6366f1",title:"Creation"}),
       page==="studio"&&React.createElement(VideoStudioPage,null),
@@ -1721,4 +1809,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 </script>
 </body>
 </html>
-

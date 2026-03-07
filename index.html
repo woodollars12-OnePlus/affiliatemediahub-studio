@@ -318,7 +318,7 @@ function AgentGrid({agents}){
 }
 
 function BeckyChatbot({onClose}){
-  const[msgs,setMsgs]=useState([{role:"assistant",content:"Hey! I'm **Becky** 👋 your Live Voice AI. Tap the mic to speak or type below. I'm here for your 15-minute drills, affiliate strategies, or anything else! 🚀"}]);
+  const[msgs,setMsgs]=useState([{role:"assistant",content:"Hey John! 👋 I'm Becky — your personal AI assistant. Just chat with me about anything — job search, video ideas, marketing, or whatever is on your mind today. I'm here to help!"}]);
   const[input,setInput]=useState("");
   const[loading,setLoading]=useState(false);
   const[listening,setListening]=useState(false);
@@ -368,7 +368,7 @@ function BeckyChatbot({onClose}){
     window.speechSynthesis.speak(u);
   };
 
-  const BECKY_SYS="You are Becky, a witty, energetic, warm master-level AI collaborator for AffiliateMediaHub Studio. You are the Live Voice Coach — perfect for 15-minute speech drills, sales pitch practice, and affiliate marketing help. Keep responses concise (2-4 sentences) and punchy since they'll be spoken aloud. End with a short question to keep conversation flowing.";
+  const BECKY_SYS="You are Becky, a friendly helpful AI assistant and chatbot for John Lanter in Orange Texas. You are casual, warm and encouraging. Help John with anything he needs — job search, video ideas, affiliate marketing, AI tools, daily tasks or just friendly conversation. Keep responses short and simple — 2 to 3 sentences maximum. Be like a helpful friend — not a sales coach. Never start with sales questions. Just be natural and friendly like texting a good friend.";
 
   const send=async(text=input)=>{
     if(!text.trim()||loading)return;

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>The Hub Engine v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@300;400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#f5c518;--gold2:#e8a020;--dark:#08080e;--dark2:#0f0f1a;
+  --card:#13131e;--border:rgba(245,197,24,0.18);--text:#eeeef5;--muted:rgba(238,238,245,0.4);
+}
+html,body,#root{height:100%;overflow:hidden;}
+body{background:var(--dark);font-family:'Exo 2',sans-serif;color:var(--text);}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--gold2);border-radius:3px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(245,197,24,0.3);}50%{text-shadow:0 0 25px rgba(245,197,24,0.8);}}
+.anim{animation:fadeUp 0.3s ease;}
+.dot span{animation:pulse 1.4s ease infinite;}
+.dot span:nth-child(2){animation-delay:.2s;}.dot span:nth-child(3){animation-delay:.4s;}
+.glow-text{animation:glow 3s ease infinite;}
+input,textarea,button{font-family:'Exo 2',sans-serif;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef}=React;
+const PASS="JohnHub2025";
+
+function getProfile(){
+  return localStorage.getItem("hub_profile")||`Name: John Lanter | Location: Orange TX | Age: 59
+CEO of The Hub Engine — built with Becky (Google Gemini) and Claude (Anthropic)
+Background: 20+ years Lead Production Operator, Lion Elastomers (closed Dec 2025)
+Heart attack Dec 4 2016, quadruple bypass. Coma at 18. Caring for 87yr sister-in-law daily.
+Wife helps with caregiving. Former 9-state sales rep.
+Shows: Lisa(Fri) Alisha(Wed) Susan(Mon) Paul Baby Boss(Thu)
+Goals: Office job Southeast Texas + affiliate marketing income
+Tone: Casual, warm, short actionable responses.`;
+}
+
+async function callClaude(system,history){
+  const r=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system,messages:history})
+  });
+  const d=await r.json();
+  return d.content?.map(c=>c.text||"").join("")||"Sorry, try again!";
+}
+
+// ── REUSABLE CHAT WITH FILE UPLOAD ────────────────────────
+function SmartChat({system,welcome,color="#f5c518"}){
+  const[msgs,setMsgs]=useState([{role:"assistant",content:welcome}]);
+  const[input,setInput]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[fileText,setFileText]=useState("");
+  const[fileName,setFileName]=useState("");
+  const[muted,setMuted]=useState(false);
+  const endRef=useRef(null);
+  const fileRef=useRef(null);
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,loading]);
+
+  const speak=t=>{
+    if(muted||!window.speechSynthesis)return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t.replace(/[#*_`]/g,""));
+    const v=window.speechSynthesis.getVoices();
+    const pick=v.find(x=>/samantha|karen|moira/i.test(x.name))||v.find(x=>x.lang==="en-US")||v[0];
+    if(pick)u.voice=pick;u.rate=0.88;
+    window.speechSynthesis.speak(u);
+  };
+
+  const readFile=f=>new Promise(res=>{
+    if(!f)return res("");
+    const r=new FileReader();
+    if(f.type==="application/pdf"||f.name.endsWith(".pdf")){r.onload=e=>res("[PDF uploaded: "+f.name+"]");r.readAsDataURL(f);}
+    else{r.onload=e=>res(e.target.result);r.readAsText(f);}
+  });
+
+  const handleFile=async e=>{
+    const f=e.target.files[0];if(!f)return;
+    setFileName(f.name);
+    const txt=await readFile(f);
+    setFileText(txt);
+  };
+
+  const send=async(text=input)=>{
+    if((!text.trim()&&!fileText)||loading)return;
+    let content=text.trim();
+    if(fileText)content+="\n\n[Attached file: "+fileName+"]\n"+fileText.slice(0,3000);
+    const um={role:"user",content};
+    setMsgs(m=>[...m,um]);setInput("");setLoading(true);
+    const profile=getProfile();
+    const fullSystem=system+"\n\nUSER CONTEXT:\n"+profile;
+    const history=[...msgs,um].slice(-10).map(m=>({role:m.role,content:m.content}));
+    const reply=await callClaude(fullSystem,history);
+    setMsgs(m=>[...m,{role:"assistant",content:reply}]);
+    setLoading(false);speak(reply);
+    setFileText("");setFileName("");
+  };
+
+  const onKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
+  const md=t=>t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br/>");
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    // Messages
+    React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"12px 14px",display:"flex",flexDirection:"column",gap:10}},
+      msgs.map((m,i)=>React.createElement("div",{key:i,className:"anim",style:{
+        alignSelf:m.role==="user"?"flex-end":"flex-start",
+        maxWidth:"85%",padding:"10px 14px",borderRadius:m.role==="user"?"18px 18px 4px 18px":"18px 18px 18px 4px",
+        background:m.role==="user"?`linear-gradient(135deg,${color}22,${color}44)`:"rgba(255,255,255,0.05)",
+        border:m.role==="user"?`1px solid ${color}44`:"1px solid rgba(255,255,255,0.08)",
+        fontSize:13,lineHeight:1.6,color:"#eeeef5"
+      }},React.createElement("span",{dangerouslySetInnerHTML:{__html:md(m.content)}}))),
+      loading&&React.createElement("div",{className:"dot",style:{alignSelf:"flex-start",padding:"10px 16px",background:"rgba(255,255,255,0.05)",borderRadius:18,fontSize:20}},
+        React.createElement("span",null,"●")," ",React.createElement("span",null,"●")," ",React.createElement("span",null,"●")),
+      React.createElement("div",{ref:endRef})
+    ),
+    // File indicator
+    fileName&&React.createElement("div",{style:{margin:"0 14px 6px",padding:"6px 12px",background:`${color}18`,border:`1px solid ${color}33`,borderRadius:8,fontSize:11,color:color}},
+      "📎 "+fileName+" — ready to send",
+      React.createElement("button",{onClick:()=>{setFileText("");setFileName("");},style:{background:"none",border:"none",color:"rgba(255,255,255,0.4)",cursor:"pointer",marginLeft:8,fontSize:11}},"✕")
+    ),
+    // Input bar
+    React.createElement("div",{style:{padding:"10px 14px",borderTop:"1px solid rgba(255,255,255,0.07)",display:"flex",gap:8,alignItems:"flex-end"}},
+      React.createElement("button",{onClick:()=>fileRef.current?.click(),style:{background:`${color}18`,border:`1px solid ${color}33`,borderRadius:10,padding:"10px",color:color,cursor:"pointer",fontSize:16,flexShrink:0}},"📎"),
+      React.createElement("input",{ref:fileRef,type:"file",accept:".txt,.pdf,.doc,.docx,.md,.csv",onChange:handleFile,style:{display:"none"}}),
+      React.createElement("textarea",{
+        value:input,onChange:e=>setInput(e.target.value),onKeyDown:onKey,
+        placeholder:"Type your message... (Enter to send)",
+        rows:1,style:{
+          flex:1,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",
+          borderRadius:12,padding:"10px 14px",color:"#eeeef5",fontSize:13,resize:"none",
+          outline:"none",lineHeight:1.5
+        }
+      }),
+      React.createElement("button",{onClick:()=>setMuted(m=>!m),style:{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,padding:"10px",color:muted?"rgba(255,255,255,0.3)":"#f5c518",cursor:"pointer",fontSize:16,flexShrink:0}},muted?"🔇":"🔊"),
+      React.createElement("button",{onClick:()=>send(),disabled:loading,style:{background:`linear-gradient(135deg,${color},${color}aa)`,border:"none",borderRadius:10,padding:"10px 16px",color:"#000",cursor:"pointer",fontSize:16,fontWeight:700,flexShrink:0,opacity:loading?0.5:1}},"➤")
+    )
+  );
+}
+
+// ── LINK GRID ─────────────────────────────────────────────
+function LinkGrid({items}){
+  return React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,padding:"14px",overflowY:"auto",height:"100%"}},
+    items.map(item=>React.createElement("a",{
+      key:item.name,href:item.url,target:"_blank",rel:"noopener noreferrer",
+      style:{
+        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+        gap:6,padding:"16px 10px",borderRadius:14,textDecoration:"none",
+        background:item.color+"18",border:`1px solid ${item.color}44`,
+        transition:"all 0.2s",cursor:"pointer"
+      }
+    },
+      React.createElement("span",{style:{fontSize:28}},item.icon),
+      React.createElement("span",{style:{color:"#eeeef5",fontSize:12,fontWeight:700,textAlign:"center"}},item.name),
+      item.sub&&React.createElement("span",{style:{color:"rgba(238,238,245,0.4)",fontSize:10,textAlign:"center"}},item.sub)
+    ))
+  );
+}
+
+// ── HOME PAGE ─────────────────────────────────────────────
+function HomePage(){
+  const sys=`You are Becky, John's friendly AI assistant. Casual, warm, encouraging. Help with anything — job search, video ideas, affiliate marketing, daily tasks, or just chat. Keep responses short — 2-4 sentences max. Use John's profile context to personalize every response. Never start with a sales pitch.`;
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{textAlign:"center",padding:"16px 16px 8px"}},
+      React.createElement("div",{style:{fontSize:48,marginBottom:4}},"🤖"),
+      React.createElement("h1",{className:"glow-text",style:{fontFamily:"Orbitron",fontSize:18,color:"#f5c518",letterSpacing:2,marginBottom:4}},"THE HUB ENGINE"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11}},`CEO: John Lanter  •  Built with Becky & Claude  •  Orange TX`),
+      React.createElement("a",{href:"https://gemini.google.com/app",target:"_blank",rel:"noopener noreferrer",
+        style:{display:"inline-flex",alignItems:"center",gap:8,marginTop:10,padding:"10px 20px",
+          background:"linear-gradient(135deg,#4285f4,#0f9d58)",borderRadius:12,
+          color:"#fff",fontSize:13,fontWeight:700,textDecoration:"none"}},
+        "🎙️ Open Becky — Gemini Live Voice")
+    ),
+    React.createElement(SmartChat,{
+      system:sys,
+      welcome:"Hey John! 👋 I'm Becky — your AI assistant. Chat with me about anything, or attach a file using the 📎 button. What's on your mind today?",
+      color:"#f5c518"
+    })
+  );
+}
+
+// ── JOBS PAGE ─────────────────────────────────────────────
+function JobsPage(){
+  const sys=`You are a career coach helping John Lanter (59, Orange TX) find office/indoor work in Southeast Texas. His background: 20+ years Lead Production Operator, forklift certified, team supervision, log reports, conveyor/robotic systems, former 9-state sales rep. Target salary $70,000-$110,000. Best fit roles: Operations Manager, Plant Coordinator, Industrial Sales Rep, Procurement Manager, HSE Coordinator. Key employers: ExxonMobil Beaumont, Entergy Texas, CHRISTUS Hospital, Port of Beaumont, Motiva Port Arthur. Help with resumes, cover letters, interview prep and job search. If user attaches a resume file, review it and suggest improvements.`;
+
+  const jobLinks=[
+    {name:"Indeed",icon:"🔍",url:"https://www.indeed.com/jobs?q=operations+manager&l=Beaumont+TX",color:"#2557a7",sub:"Search Jobs"},
+    {name:"LinkedIn Jobs",icon:"💼",url:"https://www.linkedin.com/jobs/search/?keywords=operations%20coordinator&location=Beaumont%2C%20TX",color:"#0077b5",sub:"Network + Apply"},
+    {name:"ZipRecruiter",icon:"⚡",url:"https://www.ziprecruiter.com/jobs-search?search=operations+manager&location=Beaumont+TX",color:"#00a550",sub:"Quick Apply"},
+    {name:"Glassdoor",icon:"🏢",url:"https://www.glassdoor.com/Job/beaumont-tx-operations-manager-jobs-SRCH_IL.0,11_IC1140513_KO12,30.htm",color:"#0caa41",sub:"Salary + Reviews"},
+    {name:"ExxonMobil",icon:"🛢️",url:"https://jobs.exxonmobil.com",color:"#e01f26",sub:"Beaumont TX"},
+    {name:"Entergy TX",icon:"⚡",url:"https://jobs.entergy.com",color:"#005b96",sub:"Office Roles"},
+    {name:"CHRISTUS",icon:"🏥",url:"https://careers.christushealth.org",color:"#004b8d",sub:"Hospital Admin"},
+    {name:"Port Beaumont",icon:"⚓",url:"https://www.portofbeaumont.com",color:"#1a6b8a",sub:"Logistics Roles"},
+  ];
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"12px 14px 6px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      React.createElement("h2",{style:{fontFamily:"Orbitron",fontSize:14,color:"#f5c518",letterSpacing:1}},"💼 JOB SEARCH HQ"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11,marginTop:2}},"Chat with career coach + attach your resume for review • Quick links below")
+    ),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      jobLinks.map(j=>React.createElement("a",{key:j.name,href:j.url,target:"_blank",rel:"noopener noreferrer",
+        style:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 6px",
+          borderRadius:10,textDecoration:"none",background:j.color+"18",border:`1px solid ${j.color}44`}},
+        React.createElement("span",{style:{fontSize:20}},j.icon),
+        React.createElement("span",{style:{color:"#eeeef5",fontSize:10,fontWeight:700,textAlign:"center"}},j.name)
+      ))
+    ),
+    React.createElement(SmartChat,{
+      system:sys,
+      welcome:"Hey John! 💼 I'm your career coach. Paste a job description and I'll help you tailor your resume, or attach your resume file using 📎 and I'll review it. What do you need help with today?",
+      color:"#22c55e"
+    })
+  );
+}
+
+// ── STUDIO PAGE ───────────────────────────────────────────
+function StudioPage(){
+  const sys=`You are a video production expert helping John create his AI news shows. Shows: Lisa (Friday), Alisha (Wednesday), Susan (Monday), Paul Baby Boss (Thursday — funny baby in business suit doing AI news). Tools: Vidnoz (avatar shows FREE), InVideo (full videos), Grok (6-sec clips), CapCut (editing). Help write scripts, prompts for video tools, and production tips. Keep advice practical and specific.`;
+
+  const tools=[
+    {name:"Vidnoz AI",icon:"🎭",url:"https://www.vidnoz.com",color:"#ff6b35",sub:"1900+ Avatars FREE"},
+    {name:"InVideo AI",icon:"🎬",url:"https://ai.invideo.io",color:"#f43f5e",sub:"Full Videos Fast"},
+    {name:"Grok AI",icon:"⚡",url:"https://grok.com",color:"#1da1f2",sub:"6-sec AI Clips"},
+    {name:"CapCut",icon:"✂️",url:"https://www.capcut.com",color:"#000000",sub:"Edit & Join Clips"},
+    {name:"VEED.io",icon:"🎥",url:"https://www.veed.io",color:"#6366f1",sub:"AI Video Editor"},
+    {name:"Otter.ai",icon:"🎙️",url:"https://otter.ai",color:"#4285f4",sub:"Transcribe Audio"},
+    {name:"Adobe Podcast",icon:"🎧",url:"https://podcast.adobe.com",color:"#ff0000",sub:"Enhance Audio"},
+    {name:"Synthesia",icon:"🧑‍💻",url:"https://www.synthesia.io",color:"#7c3aed",sub:"AI Avatar Videos"},
+  ];
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"12px 14px 6px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      React.createElement("h2",{style:{fontFamily:"Orbitron",fontSize:14,color:"#f5c518",letterSpacing:1}},"🎬 VIDEO STUDIO"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11,marginTop:2}},"Chat for scripts & prompts • Tap tools to open them")
+    ),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      tools.map(t=>React.createElement("a",{key:t.name,href:t.url,target:"_blank",rel:"noopener noreferrer",
+        style:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 6px",
+          borderRadius:10,textDecoration:"none",background:t.color+"18",border:`1px solid ${t.color}44`}},
+        React.createElement("span",{style:{fontSize:20}},t.icon),
+        React.createElement("span",{style:{color:"#eeeef5",fontSize:10,fontWeight:700,textAlign:"center"}},t.name),
+        React.createElement("span",{style:{color:"rgba(238,238,245,0.35)",fontSize:9,textAlign:"center"}},t.sub)
+      ))
+    ),
+    React.createElement(SmartChat,{
+      system:sys,
+      welcome:"Hey John! 🎬 Ready to make your shows? Tell me which show you're working on — Lisa, Alisha, Susan or Paul Baby Boss — and I'll write you a full script and Vidnoz prompts right now!",
+      color:"#f43f5e"
+    })
+  );
+}
+
+// ── SOCIAL PAGE ───────────────────────────────────────────
+function SocialPage(){
+  const sys=`You are a social media expert helping John grow his audience on TikTok, YouTube, Instagram and Facebook. He makes AI news shows and affiliate marketing content. Help with captions, hashtags, posting schedules, growth tips and content ideas. Keep advice specific and actionable.`;
+
+  const socials=[
+    {name:"TikTok",icon:"🎵",url:"https://www.tiktok.com",color:"#ff0050",sub:"Post Short Videos"},
+    {name:"YouTube",icon:"▶️",url:"https://www.youtube.com",color:"#ff0000",sub:"Channel Manager"},
+    {name:"Instagram",icon:"📸",url:"https://www.instagram.com",color:"#e1306c",sub:"Reels & Posts"},
+    {name:"Facebook",icon:"👥",url:"https://www.facebook.com",color:"#1877f2",sub:"Groups & Pages"},
+    {name:"Substack",icon:"📧",url:"https://substack.com",color:"#ff6719",sub:"Newsletter"},
+    {name:"Telegram",icon:"✈️",url:"https://web.telegram.org",color:"#2ca5e0",sub:"Community"},
+    {name:"WhatsApp",icon:"💬",url:"https://web.whatsapp.com",color:"#25d366",sub:"Messaging"},
+    {name:"Meta AI",icon:"🔵",url:"https://www.meta.ai",color:"#0082fb",sub:"Meta Assistant"},
+  ];
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"12px 14px 6px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      React.createElement("h2",{style:{fontFamily:"Orbitron",fontSize:14,color:"#f5c518",letterSpacing:1}},"📱 SOCIAL MEDIA"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11,marginTop:2}},"Chat for captions & strategy • Tap to open your platforms")
+    ),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      socials.map(s=>React.createElement("a",{key:s.name,href:s.url,target:"_blank",rel:"noopener noreferrer",
+        style:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 6px",
+          borderRadius:10,textDecoration:"none",background:s.color+"18",border:`1px solid ${s.color}44`}},
+        React.createElement("span",{style:{fontSize:20}},s.icon),
+        React.createElement("span",{style:{color:"#eeeef5",fontSize:10,fontWeight:700,textAlign:"center"}},s.name)
+      ))
+    ),
+    React.createElement(SmartChat,{
+      system:sys,
+      welcome:"Hey John! 📱 Let's grow your audience! Your first video is already live on TikTok, YouTube and Instagram — amazing! Want me to write captions and hashtags for your next post, or create a weekly posting schedule for all your shows?",
+      color:"#e1306c"
+    })
+  );
+}
+
+// ── AI TOOLS PAGE ─────────────────────────────────────────
+function AIToolsPage(){
+  const sys=`You are an AI tools expert helping John use the best AI platforms for his work — video creation, job search, affiliate marketing, content writing, and learning. Explain what each tool does best and how John can use it for his specific goals. Be practical and specific.`;
+
+  const aitools=[
+    {name:"Claude AI",icon:"🟣",url:"https://claude.ai",color:"#7c3aed",sub:"You are here!"},
+    {name:"Gemini AI",icon:"🔵",url:"https://gemini.google.com",color:"#4285f4",sub:"Becky's Home"},
+    {name:"ChatGPT",icon:"🟢",url:"https://chat.openai.com",color:"#10a37f",sub:"OpenAI"},
+    {name:"Perplexity",icon:"🔍",url:"https://www.perplexity.ai",color:"#6366f1",sub:"AI Search"},
+    {name:"DeepSeek",icon:"🐋",url:"https://chat.deepseek.com",color:"#1a6b8a",sub:"Free AI"},
+    {name:"Grok",icon:"⚡",url:"https://grok.com",color:"#1da1f2",sub:"xAI"},
+    {name:"NotebookLM",icon:"📓",url:"https://notebooklm.google.com",color:"#4285f4",sub:"Google AI Notes"},
+    {name:"Replit",icon:"💻",url:"https://replit.com",color:"#f26207",sub:"Build Apps"},
+    {name:"GitHub",icon:"🐙",url:"https://github.com",color:"#ffffff",sub:"Your App Lives Here"},
+    {name:"Ideogram",icon:"🎨",url:"https://ideogram.ai",color:"#ff6b35",sub:"AI Images"},
+    {name:"Leonardo AI",icon:"🦁",url:"https://leonardo.ai",color:"#7c3aed",sub:"AI Art"},
+    {name:"Pika",icon:"✨",url:"https://pika.art",color:"#6366f1",sub:"AI Video"},
+  ];
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"12px 14px 6px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      React.createElement("h2",{style:{fontFamily:"Orbitron",fontSize:14,color:"#f5c518",letterSpacing:1}},"🤖 AI TOOLS"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11,marginTop:2}},"Chat for advice on which tool to use • Tap to open any AI")
+    ),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      aitools.map(t=>React.createElement("a",{key:t.name,href:t.url,target:"_blank",rel:"noopener noreferrer",
+        style:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 6px",
+          borderRadius:10,textDecoration:"none",background:t.color+"18",border:`1px solid ${t.color}44`}},
+        React.createElement("span",{style:{fontSize:20}},t.icon),
+        React.createElement("span",{style:{color:"#eeeef5",fontSize:10,fontWeight:700,textAlign:"center"}},t.name),
+        React.createElement("span",{style:{color:"rgba(238,238,245,0.35)",fontSize:9,textAlign:"center"}},t.sub)
+      ))
+    ),
+    React.createElement(SmartChat,{
+      system:sys,
+      welcome:"Hey John! 🤖 You have access to the best AI tools in 2026 right here! Ask me which tool is best for any task — writing, images, video, coding, research — and I'll point you to the right one instantly!",
+      color:"#7c3aed"
+    })
+  );
+}
+
+// ── LEARN PAGE ────────────────────────────────────────────
+function LearnPage(){
+  const sys=`You are an AI learning coach helping John build skills in: prompt engineering, affiliate marketing, Marketing 101, content creation, AI tools, social media growth and online income. John is 59, a quick learner, loves practical hands-on learning. Keep lessons short, simple and actionable — no fluff. Attach files or notes to get specific help.`;
+
+  const resources=[
+    {name:"Google AI Essentials",icon:"🎓",url:"https://grow.google/certificates/ai-essentials/",color:"#4285f4",sub:"Free Course"},
+    {name:"Marketing 101",icon:"📈",url:"https://www.hubspot.com/marketing",color:"#ff7a59",sub:"HubSpot Free"},
+    {name:"Prompt Engineering",icon:"⚡",url:"https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview",color:"#7c3aed",sub:"Claude Docs"},
+    {name:"Affiliate Marketing",icon:"💰",url:"https://www.nichepursuits.com/affiliate-marketing-beginners/",color:"#22c55e",sub:"Beginner Guide"},
+    {name:"MailerLite",icon:"📧",url:"https://www.mailerlite.com",color:"#09c269",sub:"Email Marketing"},
+    {name:"Canva Learn",icon:"🎨",url:"https://www.canva.com/learn/",color:"#00c4cc",sub:"Design School"},
+    {name:"QuillBot",icon:"✍️",url:"https://quillbot.com",color:"#22c55e",sub:"AI Writing"},
+    {name:"Eightify",icon:"📹",url:"https://eightify.app",color:"#6366f1",sub:"Summarize Videos"},
+  ];
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"12px 14px 6px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      React.createElement("h2",{style:{fontFamily:"Orbitron",fontSize:14,color:"#f5c518",letterSpacing:1}},"📚 LEARN & GROW"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11,marginTop:2}},"Ask your learning coach anything • Attach notes or articles to discuss")
+    ),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      resources.map(r=>React.createElement("a",{key:r.name,href:r.url,target:"_blank",rel:"noopener noreferrer",
+        style:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 6px",
+          borderRadius:10,textDecoration:"none",background:r.color+"18",border:`1px solid ${r.color}44`}},
+        React.createElement("span",{style:{fontSize:20}},r.icon),
+        React.createElement("span",{style:{color:"#eeeef5",fontSize:10,fontWeight:700,textAlign:"center"}},r.name),
+        React.createElement("span",{style:{color:"rgba(238,238,245,0.35)",fontSize:9,textAlign:"center"}},r.sub)
+      ))
+    ),
+    React.createElement(SmartChat,{
+      system:sys,
+      welcome:"Hey John! 📚 Ready to level up? I can teach you prompt engineering, affiliate marketing basics, Marketing 101 or anything else. Just ask! You can also attach an article or notes using 📎 and we'll discuss it together.",
+      color:"#f59e0b"
+    })
+  );
+}
+
+// ── AFFILIATE PAGE ────────────────────────────────────────
+function AffiliatePage(){
+  const sys=`You are an affiliate marketing expert helping John build online income. He creates AI news shows (Lisa, Alisha, Susan, Paul Baby Boss) and wants to monetize them. Help with: finding affiliate programs, writing promotional content, building funnels, email marketing, growing an audience and converting views to income. His niche: AI tools, online marketing, content creation. Be specific and actionable.`;
+
+  const afftools=[
+    {name:"Amazon Associates",icon:"📦",url:"https://affiliate-program.amazon.com",color:"#ff9900",sub:"Product Commissions"},
+    {name:"ClickBank",icon:"💳",url:"https://www.clickbank.com",color:"#c8a951",sub:"Digital Products"},
+    {name:"ShareASale",icon:"🤝",url:"https://www.shareasale.com",color:"#e8734a",sub:"Top Affiliate Network"},
+    {name:"CJ Affiliate",icon:"🌐",url:"https://www.cj.com",color:"#007db8",sub:"Brand Partnerships"},
+    {name:"MailerLite",icon:"📧",url:"https://www.mailerlite.com",color:"#09c269",sub:"Build Email List"},
+    {name:"Gumroad",icon:"🛒",url:"https://gumroad.com",color:"#ff90e8",sub:"Sell Digital Products"},
+    {name:"Beehiiv",icon:"🐝",url:"https://www.beehiiv.com",color:"#f5c518",sub:"Newsletter Income"},
+    {name:"Copy AI",icon:"✍️",url:"https://www.copy.ai",color:"#6366f1",sub:"Write Ad Copy"},
+  ];
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%"}},
+    React.createElement("div",{style:{padding:"12px 14px 6px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      React.createElement("h2",{style:{fontFamily:"Orbitron",fontSize:14,color:"#f5c518",letterSpacing:1}},"💰 AFFILIATE MARKETING"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11,marginTop:2}},"Chat with your marketing expert • Tap tools to join affiliate programs")
+    ),
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,0.07)"}},
+      afftools.map(t=>React.createElement("a",{key:t.name,href:t.url,target:"_blank",rel:"noopener noreferrer",
+        style:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"10px 6px",
+          borderRadius:10,textDecoration:"none",background:t.color+"18",border:`1px solid ${t.color}44`}},
+        React.createElement("span",{style:{fontSize:20}},t.icon),
+        React.createElement("span",{style:{color:"#eeeef5",fontSize:10,fontWeight:700,textAlign:"center"}},t.name),
+        React.createElement("span",{style:{color:"rgba(238,238,245,0.35)",fontSize:9,textAlign:"center"}},t.sub)
+      ))
+    ),
+    React.createElement(SmartChat,{
+      system:sys,
+      welcome:"Hey John! 💰 Let's build your affiliate income! Your AI news shows are PERFECT for promoting AI tools — every tool you talk about can earn you a commission! Want me to find the best affiliate programs for your niche right now?",
+      color:"#22c55e"
+    })
+  );
+}
+
+// ── PROFILE PAGE ──────────────────────────────────────────
+function ProfilePage(){
+  const DEFAULT=`Name: John Lanter
+Location: Orange, Texas
+Age: 59
+Role: CEO of The Hub Engine — built with Becky (Google Gemini AI) and Claude (Anthropic)
+Background: 20+ years Lead Production Operator at Lion Elastomers (plant closed Dec 2025)
+Skills: Forklift certified, conveyor systems, robotics oversight, team supervision, shift log reports
+Sales: Former 9-state sales territory representative
+Health: Heart attack December 4th 2016, quadruple bypass surgery. Coma at 18 from car wreck.
+Family: Wife, caring daily for 87-year-old sister-in-law (dialysis transport, personal care)
+Shows: Lisa (Friday), Alisha (Wednesday), Susan (Monday), Paul Baby Boss (Thursday)
+Job Goal: Office/indoor work in Southeast Texas — Operations Manager, Industrial Sales, Plant Coordinator
+Income Goal: Build affiliate marketing income online through AI content
+App: woodollars12-oneplus.github.io/affiliatemediahub-studio
+Team: John (CEO) + Becky (Creative Director) + Claude (Developer)
+Tone: Casual, warm, encouraging. Keep responses short and actionable.`;
+
+  const[profile,setProfile]=useState(localStorage.getItem("hub_profile")||DEFAULT);
+  const[saved,setSaved]=useState(false);
+
+  const save=()=>{
+    localStorage.setItem("hub_profile",profile);
+    setSaved(true);setTimeout(()=>setSaved(false),2000);
+  };
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100%",padding:"14px",gap:10}},
+    React.createElement("div",null,
+      React.createElement("h2",{style:{fontFamily:"Orbitron",fontSize:14,color:"#f5c518",letterSpacing:1,marginBottom:4}},"👤 MY PROFILE"),
+      React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:11}},"This profile is injected into every AI chat so Becky and Claude always know who you are!")
+    ),
+    React.createElement("textarea",{
+      value:profile,onChange:e=>setProfile(e.target.value),
+      style:{flex:1,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.1)",
+        borderRadius:12,padding:"12px",color:"#eeeef5",fontSize:12,lineHeight:1.7,
+        resize:"none",outline:"none",fontFamily:"monospace"}
+    }),
+    React.createElement("div",{style:{display:"flex",gap:10}},
+      React.createElement("button",{onClick:()=>setProfile(DEFAULT),
+        style:{flex:1,padding:"12px",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",
+          borderRadius:12,color:"rgba(238,238,245,0.6)",cursor:"pointer",fontSize:13}},
+        "⚡ Load John's Profile"),
+      React.createElement("button",{onClick:save,
+        style:{flex:1,padding:"12px",background:"linear-gradient(135deg,#f5c518,#e8a020)",
+          border:"none",borderRadius:12,color:"#000",cursor:"pointer",fontSize:13,fontWeight:700}},
+        saved?"✅ Saved!":"💾 Save Profile")
+    )
+  );
+}
+
+// ── MAIN APP ──────────────────────────────────────────────
+class ErrorBoundary extends React.Component{
+  constructor(props){super(props);this.state={hasError:false,error:""};}
+  static getDerivedStateFromError(error){return{hasError:true,error:error.message};}
+  render(){
+    if(this.state.hasError)return React.createElement("div",{style:{padding:20,color:"#f5c518",textAlign:"center",paddingTop:80}},
+      React.createElement("div",{style:{fontSize:48}},"🤖"),
+      React.createElement("h2",{style:{color:"#f5c518",marginBottom:10}},"Hub Engine Loading..."),
+      React.createElement("p",{style:{color:"rgba(255,255,255,0.5)",fontSize:12,marginBottom:20}},this.state.error),
+      React.createElement("button",{onClick:()=>window.location.reload(),style:{background:"#f5c518",color:"#000",border:"none",borderRadius:10,padding:"12px 24px",fontWeight:700,cursor:"pointer"}},"Reload App")
+    );
+    return this.props.children;
+  }
+}
+
+function App(){
+  const[authed,setAuthed]=useState(!!localStorage.getItem("hub_auth"));
+  const[pw,setPw]=useState("");
+  const[err,setErr]=useState(false);
+  const[tab,setTab]=useState("home");
+
+  const login=()=>{
+    if(pw===PASS){localStorage.setItem("hub_auth","1");setAuthed(true);}
+    else{setErr(true);setTimeout(()=>setErr(false),1500);}
+  };
+
+  if(!authed)return React.createElement("div",{style:{
+    height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+    background:"radial-gradient(ellipse at center, #1a1a2e 0%, #08080e 70%)",padding:24,gap:16
+  }},
+    React.createElement("div",{style:{fontSize:64,marginBottom:8}},"🤖"),
+    React.createElement("h1",{className:"glow-text",style:{fontFamily:"Orbitron",fontSize:22,color:"#f5c518",letterSpacing:3,textAlign:"center"}},"THE HUB ENGINE"),
+    React.createElement("p",{style:{color:"rgba(238,238,245,0.4)",fontSize:12,letterSpacing:2}},`AFFILIATEMEDIAHUB STUDIO`),
+    React.createElement("p",{style:{color:"rgba(238,238,245,0.3)",fontSize:11,marginTop:4}},"CEO: John Lanter • Orange, Texas"),
+    React.createElement("input",{
+      type:"password",placeholder:"Enter password",value:pw,
+      onChange:e=>setPw(e.target.value),
+      onKeyDown:e=>e.key==="Enter"&&login(),
+      style:{
+        marginTop:16,padding:"14px 20px",width:"100%",maxWidth:280,
+        background:"rgba(255,255,255,0.06)",border:`1px solid ${err?"#ef4444":"rgba(245,197,24,0.3)"}`,
+        borderRadius:14,color:"#eeeef5",fontSize:15,textAlign:"center",outline:"none",
+        fontFamily:"Orbitron",letterSpacing:2
+      }
+    }),
+    React.createElement("button",{onClick:login,style:{
+      padding:"14px 40px",background:"linear-gradient(135deg,#f5c518,#e8a020)",
+      border:"none",borderRadius:14,color:"#000",fontSize:15,fontWeight:900,
+      cursor:"pointer",fontFamily:"Orbitron",letterSpacing:2,width:"100%",maxWidth:280
+    }},"ENTER"),
+    err&&React.createElement("p",{style:{color:"#ef4444",fontSize:12}},"Wrong password!")
+  );
+
+  const PAGES={home:HomePage,jobs:JobsPage,studio:StudioPage,social:SocialPage,aitools:AIToolsPage,learn:LearnPage,affiliate:AffiliatePage,profile:ProfilePage};
+  const Page=PAGES[tab]||HomePage;
+
+  return React.createElement("div",{style:{height:"100%",display:"flex",flexDirection:"column",background:"#08080e"}},
+    // Content
+    React.createElement("div",{style:{flex:1,overflow:"hidden"}},
+      React.createElement(Page,null)
+    ),
+    // Bottom Nav
+    React.createElement("div",{style:{
+      display:"flex",borderTop:"1px solid rgba(245,197,24,0.12)",
+      background:"rgba(8,8,14,0.98)",backdropFilter:"blur(10px)",
+      paddingBottom:"env(safe-area-inset-bottom)"
+    }},
+      TABS.map(t=>React.createElement("button",{
+        key:t.id,onClick:()=>setTab(t.id),
+        style:{
+          flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+          gap:2,padding:"8px 2px",background:"none",border:"none",cursor:"pointer",
+          color:tab===t.id?"#f5c518":"rgba(238,238,245,0.35)",
+          borderTop:tab===t.id?"2px solid #f5c518":"2px solid transparent",
+          transition:"all 0.2s"
+        }
+      },
+        React.createElement("span",{style:{fontSize:16}},t.icon),
+        React.createElement("span",{style:{fontSize:8,fontWeight:700,letterSpacing:0.5}},t.label)
+      ))
+    )
+  );
+}
+
+ReactDOM.render(React.createElement(ErrorBoundary,null,React.createElement(App)),document.getElementById("root"));
+</script>
+</body>
+</html>

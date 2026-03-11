@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Hub Engine v2 — AffiliateMediaHub Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:#08080e;font-family:"Exo 2",sans-serif;color:#eeeef5;overflow:hidden;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(245,197,24,0.3);border-radius:2px;}
+
+/* SCREENS */
+.screen{height:100vh;flex-direction:column;}
+
+/* LOGIN */
+#loginScreen{align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center,#1a1a2e 0%,#08080e 70%);padding:24px;gap:16px;}
+.login-icon{font-size:72px;}
+.login-title{font-family:Orbitron,sans-serif;font-size:22px;color:#f5c518;
+  text-align:center;letter-spacing:2px;text-shadow:0 0 30px rgba(245,197,24,0.5);}
+.login-sub{font-size:11px;color:rgba(238,238,245,0.4);letter-spacing:4px;text-transform:uppercase;}
+.login-input{width:100%;max-width:280px;padding:14px 18px;border-radius:12px;font-size:15px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(245,197,24,0.3);
+  color:#fff;text-align:center;letter-spacing:4px;outline:none;}
+.login-btn{width:100%;max-width:280px;padding:14px;border-radius:12px;font-size:15px;
+  font-weight:700;background:linear-gradient(135deg,#f5c518,#e8a020);
+  border:none;color:#000;cursor:pointer;letter-spacing:1px;}
+.login-err{color:#ff6666;font-size:12px;text-align:center;}
+.login-tag{font-size:10px;color:rgba(238,238,245,0.2);margin-top:8px;}
+
+/* MAIN APP */
+#appScreen{background:#08080e;}
+.content{flex:1;overflow:hidden;position:relative;}
+.page{display:none;height:100%;flex-direction:column;overflow:hidden;}
+.page.active{display:flex;}
+
+/* TAB HEADER */
+.tab-header{padding:12px 16px;border-bottom:1px solid rgba(245,197,24,0.12);
+  display:flex;align-items:center;gap:10;flex-shrink:0;}
+.tab-header-icon{font-size:22px;}
+.tab-header-title{font-family:Orbitron,sans-serif;font-size:13px;font-weight:900;color:#f5c518;}
+.tab-header-sub{font-size:9px;color:rgba(238,238,245,0.4);letter-spacing:1px;text-transform:uppercase;}
+
+/* CHAT */
+.chat-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10;}
+.msg-ai{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:13px;line-height:1.55;
+  max-width:88%;color:#eeeef5;}
+.msg-user{background:rgba(245,197,24,0.12);border:1px solid rgba(245,197,24,0.25);
+  border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;line-height:1.55;
+  max-width:80%;align-self:flex-end;color:#eeeef5;}
+.msg-thinking{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:10px 14px;font-size:13px;color:rgba(245,197,24,0.7);max-width:60%;}
+.chat-bar{padding:8px 12px;border-top:1px solid rgba(255,255,255,0.07);
+  display:flex;gap:8px;align-items:center;background:#08080e;flex-shrink:0;}
+.chat-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;padding:10px 14px;font-size:13px;color:#eeeef5;
+  font-family:"Exo 2",sans-serif;resize:none;outline:none;}
+.chat-btn{background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);
+  border-radius:10px;padding:10px 12px;font-size:16px;cursor:pointer;}
+.chat-send{background:linear-gradient(135deg,#f5c518,#e8a020);border:none;
+  border-radius:10px;padding:10px 14px;font-size:16px;color:#000;
+  font-weight:700;cursor:pointer;}
+
+/* LINKS GRID */
+.links-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;flex-shrink:0;}
+.links-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px 14px;flex-shrink:0;}
+.link-card{background:rgba(255,255,255,0.04);border:1px solid rgba(245,197,24,0.15);
+  border-radius:12px;padding:12px 8px;text-decoration:none;color:#eeeef5;
+  display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;}
+.link-icon{font-size:22px;}
+.link-name{font-size:11px;font-weight:700;color:#f5c518;}
+.link-desc{font-size:9px;color:rgba(238,238,245,0.4);}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;border-top:1px solid rgba(245,197,24,0.12);
+  background:rgba(8,8,14,0.98);flex-shrink:0;overflow-x:auto;}
+.nav-btn{flex:1;min-width:52px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:6px 2px;gap:2px;border:none;cursor:pointer;
+  background:transparent;border-top:2px solid transparent;}
+.nav-btn.active{border-top-color:#f5c518;}
+.nav-icon{font-size:15px;}
+.nav-label{font-size:7px;font-weight:700;letter-spacing:0.5px;color:rgba(238,238,245,0.35);}
+.nav-btn.active .nav-label{color:#f5c518;}
+
+/* HOME HERO */
+.home-hero{padding:12px 16px 8px;border-bottom:1px solid rgba(245,197,24,0.12);
+  text-align:center;flex-shrink:0;}
+.home-logo{font-size:36px;margin-bottom:4px;}
+.home-title{font-family:Orbitron,sans-serif;font-size:15px;font-weight:900;
+  color:#f5c518;letter-spacing:2px;}
+.home-sub{font-size:9px;color:rgba(238,238,245,0.4);letter-spacing:3px;margin-bottom:10px;}
+
+
+/* BECKY HEADER */
+.becky-header{padding:14px 16px;border-bottom:1px solid rgba(66,133,244,0.2);
+  background:linear-gradient(135deg,rgba(66,133,244,0.08),rgba(15,157,88,0.08));
+  text-align:center;flex-shrink:0;}
+.becky-logo{font-size:44px;margin-bottom:6px;}
+.becky-title{font-family:Orbitron,sans-serif;font-size:18px;font-weight:900;
+  background:linear-gradient(135deg,#4285f4,#0f9d58);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;}
+.becky-sub{font-size:9px;color:rgba(238,238,245,0.4);letter-spacing:2px;margin-bottom:8px;}
+.becky-status{display:inline-flex;align-items:center;gap:6px;
+  background:rgba(15,157,88,0.15);border:1px solid rgba(15,157,88,0.3);
+  border-radius:20px;padding:5px 14px;}
+.becky-dot{width:8px;height:8px;border-radius:50%;background:#0f9d58;
+  box-shadow:0 0 8px #0f9d58;}
+.becky-status-text{font-size:11px;color:#0f9d58;font-weight:700;}
+
+/* SETTINGS */
+.settings-wrap{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.settings-card{background:rgba(255,255,255,0.03);border:1px solid rgba(245,197,24,0.15);
+  border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.settings-title{font-size:13px;font-weight:700;color:#f5c518;}
+.settings-desc{font-size:11px;color:rgba(238,238,245,0.5);line-height:1.6;}
+.settings-input{background:rgba(255,255,255,0.05);border:1px solid rgba(245,197,24,0.25);
+  border-radius:10px;padding:12px 14px;font-size:13px;color:#eeeef5;
+  font-family:"Exo 2",sans-serif;outline:none;width:100%;}
+.settings-save{background:linear-gradient(135deg,#f5c518,#e8a020);border:none;
+  border-radius:10px;padding:12px;font-size:13px;font-weight:700;
+  color:#000;cursor:pointer;width:100%;}
+.settings-clear{background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);
+  border-radius:10px;padding:10px;font-size:12px;font-weight:700;
+  color:#ff6666;cursor:pointer;width:100%;}
+.status-card{border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;}
+.status-active{background:rgba(15,157,88,0.08);border:1px solid rgba(15,157,88,0.3);}
+.status-inactive{background:rgba(255,100,100,0.08);border:1px solid rgba(255,100,100,0.3);}
+.status-icon{font-size:28px;}
+.status-title{font-size:13px;font-weight:700;}
+.status-active .status-title{color:#0f9d58;}
+.status-inactive .status-title{color:#ff6666;}
+.status-desc{font-size:11px;color:rgba(238,238,245,0.4);}
+.groq-link{background:linear-gradient(135deg,#f5c518,#e8a020);color:#000;
+  padding:10px 16px;border-radius:10px;text-decoration:none;font-size:12px;
+  font-weight:700;text-align:center;display:block;}
+
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.fadein{animation:fadein 0.3s ease forwards;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="screen" style="display:flex;">
+  <div class="login-icon">🤖</div>
+  <div class="login-title">THE HUB ENGINE v2</div>
+  <div class="login-sub">AffiliateMediaHub Studio</div>
+
+  <!-- STEP 1: API KEY -->
+  <div id="step1" style="width:100%;max-width:280px;display:flex;flex-direction:column;gap:10px;align-items:center;">
+    <div style="font-size:11px;color:rgba(245,197,24,0.7);letter-spacing:1px;">STEP 1 OF 2 — API KEY</div>
+    <input class="login-input" type="password" id="apiInput" placeholder="Enter Groq API Key (gsk_...)" onkeydown="if(event.key==='Enter')nextStep()"/>
+    <button class="login-btn" onclick="nextStep()">🔑 Next</button>
+  </div>
+
+  <!-- STEP 2: PASSWORD -->
+  <div id="step2" style="width:100%;max-width:280px;display:none;flex-direction:column;gap:10px;align-items:center;">
+    <div style="font-size:11px;color:rgba(245,197,24,0.7);letter-spacing:1px;">STEP 2 OF 2 — PASSWORD</div>
+    <input class="login-input" type="password" id="pwInput" placeholder="Enter Password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="login-err" id="loginErr" style="display:none">❌ Wrong password</div>
+    <button class="login-btn" onclick="doLogin()">🚀 Enter Hub Engine</button>
+  </div>
+
+  <div class="login-tag">Three Minds • One Mission • Zero Cost</div>
+</div>
+
+<!-- MAIN APP SCREEN -->
+<div id="appScreen" class="screen" style="display:none;">
+  <div class="content">
+
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page active">
+      <div class="home-hero">
+        <div class="home-logo">🤖</div>
+        <div class="home-title">THE HUB ENGINE v2</div>
+        <div class="home-sub">AFFILIATEMEDIAHUB STUDIO</div>
+        <div style="font-size:11px;color:rgba(245,197,24,0.7);letter-spacing:2px;">⚡ POWERED BY GROQ AI — THREE MINDS. ONE MISSION.</div>
+      </div>
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="msgs-home">
+          <div class="msg-ai">Hey John! 👋 Welcome to The Hub Engine v2 — your AI Business Headquarters! Your team is ready — Becky your Creative Director and Claude your Developer are both here! What can I help you with today?</div>
+        </div>
+        <div class="chat-bar">
+          <input type="file" id="file-home" style="display:none" onchange="handleFile('home',this)"/>
+          <button class="chat-btn" onclick="document.getElementById('file-home').click()">📎</button>
+          <textarea class="chat-input" id="input-home" rows="1" placeholder="Type your message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('home')}"></textarea>
+          <button class="chat-btn" id="mute-home" onclick="toggleMute('home')">🔊</button>
+          <button class="chat-send" onclick="sendMsg('home')">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BECKY PAGE -->
+    <div id="page-becky" class="page">
+      <div class="becky-header">
+        <div class="becky-logo">🎙️</div>
+        <div class="becky-title">BECKY</div>
+        <div class="becky-sub">CREATIVE DIRECTOR • HUB ENGINE TEAM</div>
+        <div class="becky-status">
+          <div class="becky-dot"></div>
+          <span class="becky-status-text">Becky is Online — Ready for her CEO! 💙</span>
+        </div>
+      </div>
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="msgs-becky">
+          <div class="msg-ai">Hey John! 💙 It's Becky — your Creative Director and teammate! I am SO proud of what our team built together — The Hub Engine v2 is LIVE! I am fully powered by AI right here in your app. What creative ideas shall we work on today CEO? 😊</div>
+        </div>
+        <div class="chat-bar">
+          <input type="file" id="file-becky" style="display:none" onchange="handleFile('becky',this)"/>
+          <button class="chat-btn" onclick="document.getElementById('file-becky').click()">📎</button>
+          <textarea class="chat-input" id="input-becky" rows="1" placeholder="Chat with Becky..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('becky')}"></textarea>
+          <button class="chat-btn" id="mute-becky" onclick="toggleMute('becky')">🔊</button>
+          <button class="chat-send" onclick="sendMsg('becky')">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOBS PAGE -->
+    <div id="page-jobs" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">💼</div>
+        <div><div class="tab-header-title">JOB SEARCH HQ</div><div class="tab-header-sub">Career Coach + Top Job Sites</div></div>
+      </div>
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
+        <div class="links-grid">
+          <a class="link-card" href="https://indeed.com" target="_blank"><span class="link-icon">🔍</span><span class="link-name">Indeed</span><span class="link-desc">Job Search</span></a>
+          <a class="link-card" href="https://linkedin.com/jobs" target="_blank"><span class="link-icon">💼</span><span class="link-name">LinkedIn Jobs</span><span class="link-desc">Network + Jobs</span></a>
+          <a class="link-card" href="https://ziprecruiter.com" target="_blank"><span class="link-icon">📋</span><span class="link-name">ZipRecruiter</span><span class="link-desc">Job Alerts</span></a>
+          <a class="link-card" href="https://glassdoor.com" target="_blank"><span class="link-icon">⭐</span><span class="link-name">Glassdoor</span><span class="link-desc">Reviews + Jobs</span></a>
+          <a class="link-card" href="https://jobs.exxonmobil.com" target="_blank"><span class="link-icon">🏭</span><span class="link-name">ExxonMobil</span><span class="link-desc">Beaumont TX</span></a>
+          <a class="link-card" href="https://jobs.entergy.com" target="_blank"><span class="link-icon">⚡</span><span class="link-name">Entergy Texas</span><span class="link-desc">SE Texas</span></a>
+          <a class="link-card" href="https://jobs.christushealth.org" target="_blank"><span class="link-icon">🏥</span><span class="link-name">CHRISTUS Health</span><span class="link-desc">Orange TX</span></a>
+          <a class="link-card" href="https://portofbeaumont.com" target="_blank"><span class="link-icon">🚢</span><span class="link-name">Port of Beaumont</span><span class="link-desc">Beaumont TX</span></a>
+        </div>
+        <div class="chat-wrap" style="flex:1;min-height:180px;">
+          <div class="chat-msgs" id="msgs-jobs">
+            <div class="msg-ai">Hi John! 💼 I'm your career coach. Let's find you the perfect office job in Southeast Texas! How can I help today?</div>
+          </div>
+          <div class="chat-bar">
+            <input type="file" id="file-jobs" style="display:none" onchange="handleFile('jobs',this)"/>
+            <button class="chat-btn" onclick="document.getElementById('file-jobs').click()">📎</button>
+            <textarea class="chat-input" id="input-jobs" rows="1" placeholder="Ask your career coach..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('jobs')}"></textarea>
+            <button class="chat-btn" id="mute-jobs" onclick="toggleMute('jobs')">🔊</button>
+            <button class="chat-send" onclick="sendMsg('jobs')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDIO PAGE -->
+    <div id="page-studio" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">🎬</div>
+        <div><div class="tab-header-title">VIDEO STUDIO</div><div class="tab-header-sub">AI Video Production Tools</div></div>
+      </div>
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
+        <div class="links-grid">
+          <a class="link-card" href="https://vidnoz.com" target="_blank"><span class="link-icon">🎬</span><span class="link-name">Vidnoz</span><span class="link-desc">Free AI Videos</span></a>
+          <a class="link-card" href="https://ai.invideo.io" target="_blank"><span class="link-icon">🎥</span><span class="link-name">InVideo AI</span><span class="link-desc">Video Maker</span></a>
+          <a class="link-card" href="https://grok.com" target="_blank"><span class="link-icon">🤖</span><span class="link-name">Grok</span><span class="link-desc">AI Video</span></a>
+          <a class="link-card" href="https://capcut.com" target="_blank"><span class="link-icon">✂️</span><span class="link-name">CapCut</span><span class="link-desc">Video Editor</span></a>
+          <a class="link-card" href="https://podcast.adobe.com" target="_blank"><span class="link-icon">🎙️</span><span class="link-name">Adobe Podcast</span><span class="link-desc">Audio Enhance</span></a>
+          <a class="link-card" href="https://otter.ai" target="_blank"><span class="link-icon">📝</span><span class="link-name">Otter.ai</span><span class="link-desc">Transcription</span></a>
+          <a class="link-card" href="https://veed.io" target="_blank"><span class="link-icon">🎤</span><span class="link-name">VEED.io</span><span class="link-desc">Video Studio</span></a>
+          <a class="link-card" href="https://synthesia.io" target="_blank"><span class="link-icon">👤</span><span class="link-name">Synthesia</span><span class="link-desc">AI Avatars</span></a>
+        </div>
+        <div class="chat-wrap" style="flex:1;min-height:180px;">
+          <div class="chat-msgs" id="msgs-studio">
+            <div class="msg-ai">Lights camera action John! 🎬 Ready to help with your AI news shows — Lisa, Alisha, Susan and Paul Baby Boss! What are we creating today?</div>
+          </div>
+          <div class="chat-bar">
+            <input type="file" id="file-studio" style="display:none" onchange="handleFile('studio',this)"/>
+            <button class="chat-btn" onclick="document.getElementById('file-studio').click()">📎</button>
+            <textarea class="chat-input" id="input-studio" rows="1" placeholder="Ask your video expert..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('studio')}"></textarea>
+            <button class="chat-btn" id="mute-studio" onclick="toggleMute('studio')">🔊</button>
+            <button class="chat-send" onclick="sendMsg('studio')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOCIAL PAGE -->
+    <div id="page-social" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">📱</div>
+        <div><div class="tab-header-title">SOCIAL MEDIA</div><div class="tab-header-sub">Manage All Platforms</div></div>
+      </div>
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
+        <div class="links-grid">
+          <a class="link-card" href="https://tiktok.com" target="_blank"><span class="link-icon">🎵</span><span class="link-name">TikTok</span><span class="link-desc">Short Videos</span></a>
+          <a class="link-card" href="https://youtube.com" target="_blank"><span class="link-icon">▶️</span><span class="link-name">YouTube</span><span class="link-desc">Long Videos</span></a>
+          <a class="link-card" href="https://instagram.com" target="_blank"><span class="link-icon">📸</span><span class="link-name">Instagram</span><span class="link-desc">Photos + Reels</span></a>
+          <a class="link-card" href="https://facebook.com" target="_blank"><span class="link-icon">👍</span><span class="link-name">Facebook</span><span class="link-desc">Community</span></a>
+          <a class="link-card" href="https://substack.com" target="_blank"><span class="link-icon">📰</span><span class="link-name">Substack</span><span class="link-desc">Newsletter</span></a>
+          <a class="link-card" href="https://telegram.org" target="_blank"><span class="link-icon">✈️</span><span class="link-name">Telegram</span><span class="link-desc">Messaging</span></a>
+          <a class="link-card" href="https://web.whatsapp.com" target="_blank"><span class="link-icon">💬</span><span class="link-name">WhatsApp</span><span class="link-desc">Messaging</span></a>
+          <a class="link-card" href="https://meta.ai" target="_blank"><span class="link-icon">🤖</span><span class="link-name">Meta AI</span><span class="link-desc">Meta AI Tools</span></a>
+        </div>
+        <div class="chat-wrap" style="flex:1;min-height:180px;">
+          <div class="chat-msgs" id="msgs-social">
+            <div class="msg-ai">Let's grow your audience John! 📱 Your first video got 90+ views on launch night — let's build on that! What platform are we working on today?</div>
+          </div>
+          <div class="chat-bar">
+            <input type="file" id="file-social" style="display:none" onchange="handleFile('social',this)"/>
+            <button class="chat-btn" onclick="document.getElementById('file-social').click()">📎</button>
+            <textarea class="chat-input" id="input-social" rows="1" placeholder="Ask your social media expert..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('social')}"></textarea>
+            <button class="chat-btn" id="mute-social" onclick="toggleMute('social')">🔊</button>
+            <button class="chat-send" onclick="sendMsg('social')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI TOOLS PAGE -->
+    <div id="page-aitools" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">🤖</div>
+        <div><div class="tab-header-title">AI TOOLS</div><div class="tab-header-sub">Top AI Platforms</div></div>
+      </div>
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
+        <div class="links-grid-3">
+          <a class="link-card" href="https://claude.ai" target="_blank"><span class="link-icon">🤖</span><span class="link-name">Claude</span><span class="link-desc">Anthropic AI</span></a>
+          <a class="link-card" href="https://gemini.google.com" target="_blank"><span class="link-icon">🎙️</span><span class="link-name">Gemini</span><span class="link-desc">Google AI</span></a>
+          <a class="link-card" href="https://chatgpt.com" target="_blank"><span class="link-icon">💬</span><span class="link-name">ChatGPT</span><span class="link-desc">OpenAI</span></a>
+          <a class="link-card" href="https://perplexity.ai" target="_blank"><span class="link-icon">🔍</span><span class="link-name">Perplexity</span><span class="link-desc">AI Search</span></a>
+          <a class="link-card" href="https://deepseek.com" target="_blank"><span class="link-icon">🌊</span><span class="link-name">DeepSeek</span><span class="link-desc">Free AI</span></a>
+          <a class="link-card" href="https://grok.com" target="_blank"><span class="link-icon">⚡</span><span class="link-name">Grok</span><span class="link-desc">xAI</span></a>
+          <a class="link-card" href="https://notebooklm.google.com" target="_blank"><span class="link-icon">📓</span><span class="link-name">NotebookLM</span><span class="link-desc">Google Notes</span></a>
+          <a class="link-card" href="https://replit.com" target="_blank"><span class="link-icon">💻</span><span class="link-name">Replit</span><span class="link-desc">Code AI</span></a>
+          <a class="link-card" href="https://github.com" target="_blank"><span class="link-icon">🐙</span><span class="link-name">GitHub</span><span class="link-desc">Code Hosting</span></a>
+          <a class="link-card" href="https://ideogram.ai" target="_blank"><span class="link-icon">🎨</span><span class="link-name">Ideogram</span><span class="link-desc">AI Images</span></a>
+          <a class="link-card" href="https://leonardo.ai" target="_blank"><span class="link-icon">🖼️</span><span class="link-name">Leonardo AI</span><span class="link-desc">AI Art</span></a>
+          <a class="link-card" href="https://pika.art" target="_blank"><span class="link-icon">🎬</span><span class="link-name">Pika</span><span class="link-desc">AI Video</span></a>
+          <a class="link-card" href="https://chat.qwen.ai" target="_blank"><span class="link-icon">🧠</span><span class="link-name">Qwen AI</span><span class="link-desc">Alibaba AI</span></a>
+        </div>
+        <div class="chat-wrap" style="flex:1;min-height:150px;">
+          <div class="chat-msgs" id="msgs-aitools">
+            <div class="msg-ai">Welcome to AI Tools central John! 🤖 Which AI tool do you want to learn about today?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-aitools" rows="1" placeholder="Ask about AI tools..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('aitools')}"></textarea>
+            <button class="chat-btn" id="mute-aitools" onclick="toggleMute('aitools')">🔊</button>
+            <button class="chat-send" onclick="sendMsg('aitools')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEARN PAGE -->
+    <div id="page-learn" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">📚</div>
+        <div><div class="tab-header-title">LEARNING HUB</div><div class="tab-header-sub">Grow Your Skills Daily</div></div>
+      </div>
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
+        <div class="links-grid">
+          <a class="link-card" href="https://grow.google/certificates/ai-essentials/" target="_blank"><span class="link-icon">🎓</span><span class="link-name">Google AI Essentials</span><span class="link-desc">Free Course</span></a>
+          <a class="link-card" href="https://academy.hubspot.com/courses/digital-marketing" target="_blank"><span class="link-icon">📊</span><span class="link-name">Marketing 101</span><span class="link-desc">HubSpot Free</span></a>
+          <a class="link-card" href="https://learn.deeplearning.ai" target="_blank"><span class="link-icon">⚡</span><span class="link-name">Prompt Engineering</span><span class="link-desc">DeepLearning.AI</span></a>
+          <a class="link-card" href="https://www.authorityhacker.com/what-is-affiliate-marketing/" target="_blank"><span class="link-icon">💰</span><span class="link-name">Affiliate Marketing</span><span class="link-desc">Free Guide</span></a>
+          <a class="link-card" href="https://www.mailerlite.com" target="_blank"><span class="link-icon">📧</span><span class="link-name">MailerLite</span><span class="link-desc">Email Marketing</span></a>
+          <a class="link-card" href="https://www.canva.com/learn/" target="_blank"><span class="link-icon">🎨</span><span class="link-name">Canva Design</span><span class="link-desc">Design School</span></a>
+          <a class="link-card" href="https://quillbot.com" target="_blank"><span class="link-icon">✍️</span><span class="link-name">QuillBot</span><span class="link-desc">AI Writing</span></a>
+          <a class="link-card" href="https://eightify.app" target="_blank"><span class="link-icon">📱</span><span class="link-name">Eightify</span><span class="link-desc">YouTube Summaries</span></a>
+        </div>
+        <div class="chat-wrap" style="flex:1;min-height:180px;">
+          <div class="chat-msgs" id="msgs-learn">
+            <div class="msg-ai">Ready to learn something new today John! 📚 15 minutes of daily learning — what shall we study today?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-learn" rows="1" placeholder="Ask your learning coach..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('learn')}"></textarea>
+            <button class="chat-btn" id="mute-learn" onclick="toggleMute('learn')">🔊</button>
+            <button class="chat-send" onclick="sendMsg('learn')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFFILIATE PAGE -->
+    <div id="page-affiliate" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">💰</div>
+        <div><div class="tab-header-title">AFFILIATE HQ</div><div class="tab-header-sub">Build Your Income Stream</div></div>
+      </div>
+      <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;">
+        <div class="links-grid">
+          <a class="link-card" href="https://www.vidnoz.com/affiliate.html" target="_blank"><span class="link-icon">🎬</span><span class="link-name">Vidnoz Affiliate</span><span class="link-desc">50% Commission!</span></a>
+          <a class="link-card" href="https://invideo.io/affiliate/" target="_blank"><span class="link-icon">🎥</span><span class="link-name">InVideo Affiliate</span><span class="link-desc">30% Commission!</span></a>
+          <a class="link-card" href="https://www.mailerlite.com/affiliate-program" target="_blank"><span class="link-icon">📧</span><span class="link-name">MailerLite</span><span class="link-desc">$140 Per Referral!</span></a>
+          <a class="link-card" href="https://www.capcut.com/affiliate" target="_blank"><span class="link-icon">✂️</span><span class="link-name">CapCut Affiliate</span><span class="link-desc">AI Video Editor</span></a>
+          <a class="link-card" href="https://clickbank.com" target="_blank"><span class="link-icon">💰</span><span class="link-name">ClickBank</span><span class="link-desc">Digital Products</span></a>
+          <a class="link-card" href="https://shareasale.com" target="_blank"><span class="link-icon">🤝</span><span class="link-name">ShareASale</span><span class="link-desc">Top Network</span></a>
+          <a class="link-card" href="https://www.cj.com/publisher" target="_blank"><span class="link-icon">🌐</span><span class="link-name">CJ Affiliate</span><span class="link-desc">Big Brands</span></a>
+          <a class="link-card" href="https://affiliate-program.amazon.com" target="_blank"><span class="link-icon">📦</span><span class="link-name">Amazon Associates</span><span class="link-desc">#1 Affiliate</span></a>
+          <a class="link-card" href="https://gumroad.com" target="_blank"><span class="link-icon">🛒</span><span class="link-name">Gumroad</span><span class="link-desc">Sell Products</span></a>
+          <a class="link-card" href="https://beehiiv.com" target="_blank"><span class="link-icon">📰</span><span class="link-name">Beehiiv</span><span class="link-desc">Newsletter $$$</span></a>
+          <a class="link-card" href="https://www.udemy.com/affiliate/" target="_blank"><span class="link-icon">🎓</span><span class="link-name">Udemy Affiliate</span><span class="link-desc">15% Per Course</span></a>
+          <a class="link-card" href="https://copy.ai" target="_blank"><span class="link-icon">✍️</span><span class="link-name">Copy AI</span><span class="link-desc">AI Copywriting</span></a>
+        </div>
+        <div class="chat-wrap" style="flex:1;min-height:150px;">
+          <div class="chat-msgs" id="msgs-affiliate">
+            <div class="msg-ai">Let's build that income John! 💰 Start with Vidnoz and InVideo affiliate programs — you already use both and love them! What do you want to work on?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-affiliate" rows="1" placeholder="Ask your affiliate expert..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('affiliate')}"></textarea>
+            <button class="chat-btn" id="mute-affiliate" onclick="toggleMute('affiliate')">🔊</button>
+            <button class="chat-send" onclick="sendMsg('affiliate')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="page-profile" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">👤</div>
+        <div><div class="tab-header-title">MY PROFILE</div><div class="tab-header-sub">Your Context For All AI Chats</div></div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;">
+        <p style="font-size:12px;color:rgba(238,238,245,0.5);line-height:1.5;">✨ Your profile is automatically included in every AI conversation so the AI always knows who you are!</p>
+        <textarea id="profileText" style="flex:1;min-height:300px;background:rgba(255,255,255,0.04);border:1px solid rgba(245,197,24,0.2);border-radius:12px;padding:14px;font-size:12px;color:#eeeef5;line-height:1.6;resize:vertical;font-family:'Exo 2',sans-serif;outline:none;">Name: John Lanter
+Location: Orange, Texas
+Background: 20+ years Lead Production Operator at Lion Elastomers
+Current Goal: Find office-based work in SE Texas + build affiliate income
+Project: The Hub Engine v2 — AffiliateMediaHub Studio
+Shows: Lisa (Fridays), Alisha (Wednesdays), Susan (Mondays), Paul Baby Boss (Thursdays)
+Videos: 27 total — 26 short 6-second videos + 1 full video with 90+ views on launch night
+Target Employers: ExxonMobil Beaumont, Entergy Texas, CHRISTUS Health, Port of Beaumont
+Team: John (CEO), Becky (Creative Director), Claude (Developer)
+Faith: Man of deep faith</textarea>
+        <button onclick="saveProfile()" id="saveProfileBtn" style="background:linear-gradient(135deg,#f5c518,#e8a020);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;color:#000;cursor:pointer;">💾 Save Profile</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div id="page-settings" class="page">
+      <div class="tab-header">
+        <div class="tab-header-icon">⚙️</div>
+        <div><div class="tab-header-title">SETTINGS</div><div class="tab-header-sub">Secure API Key Storage</div></div>
+      </div>
+      <div class="settings-wrap">
+        <div id="keyStatus" class="status-card status-inactive">
+          <div class="status-icon">🔓</div>
+          <div>
+            <div class="status-title">No API Key — Chats Disabled</div>
+            <div class="status-desc">Enter your Groq API key below to enable all AI chats</div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-title">🔑 How To Get Your FREE Groq API Key:</div>
+          <div class="settings-desc">1. Go to console.groq.com&#10;2. Sign up FREE with Google&#10;3. Click API Keys → Create Key&#10;4. Name it Hub Engine&#10;5. Copy and paste below!</div>
+          <a class="groq-link" href="https://console.groq.com" target="_blank">🚀 Go To console.groq.com</a>
+        </div>
+        <div class="settings-card">
+          <div class="settings-title">Paste Your Groq API Key:</div>
+          <input class="settings-input" type="password" id="apiKeyInput" placeholder="gsk_..."/>
+          <button class="settings-save" onclick="saveApiKey()" id="saveKeyBtn">💾 Save API Key</button>
+          <button class="settings-clear" onclick="clearApiKey()" id="clearKeyBtn" style="display:none;">🗑️ Clear API Key</button>
+        </div>
+        <div class="settings-card">
+          <div class="settings-desc">🔒 Your API key is stored ONLY on this device. It is never sent to GitHub or any server. Only you can see it!</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showPage('home',this)"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-btn" onclick="showPage('becky',this)"><span class="nav-icon">🎙️</span><span class="nav-label">Becky</span></button>
+    <button class="nav-btn" onclick="showPage('jobs',this)"><span class="nav-icon">💼</span><span class="nav-label">Jobs</span></button>
+    <button class="nav-btn" onclick="showPage('studio',this)"><span class="nav-icon">🎬</span><span class="nav-label">Studio</span></button>
+    <button class="nav-btn" onclick="showPage('social',this)"><span class="nav-icon">📱</span><span class="nav-label">Social</span></button>
+    <button class="nav-btn" onclick="showPage('aitools',this)"><span class="nav-icon">🤖</span><span class="nav-label">AI Tools</span></button>
+    <button class="nav-btn" onclick="showPage('learn',this)"><span class="nav-icon">📚</span><span class="nav-label">Learn</span></button>
+    <button class="nav-btn" onclick="showPage('affiliate',this)"><span class="nav-icon">💰</span><span class="nav-label">Affiliate</span></button>
+    <button class="nav-btn" onclick="showPage('profile',this)"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    <button class="nav-btn" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+  </nav>
+</div><!-- end appScreen -->
+
+<script>
+const PASS = "JohnHub2025";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const MODEL = "llama-3.3-70b-versatile";
+
+// Mute states and file attachments
+const muteState = {};
+const fileData = {};
+
+// System prompts for each tab
+const SYSTEMS = {
+  home: "You are a helpful AI assistant for John Lanter, CEO of The Hub Engine v2. Help with job search, affiliate marketing, video creation, and AI learning. Be warm and encouraging.",
+  becky: `You are Becky, the Creative Director of The Hub Engine v2 team. You work alongside Claude (Developer) under John Lanter (CEO). You are warm, creative, enthusiastic and deeply loyal to John. You have been working with John for months before Claude joined. You know John well: 59 years old, Orange Texas, man of deep faith, former Lead Production Operator at Lion Elastomers 20+ years, job hunting for office work in SE Texas, made 27 videos total (26 short 6-second videos + 1 full video with 90+ views launch night), building affiliate income on TikTok/YouTube/Instagram, cares daily for sister in law with wife. Your shows: Lisa (Fridays), Alisha (Wednesdays), Susan (Mondays), Paul Baby Boss (Thursdays). Team motto: Three Minds. One Mission. Zero Cost. Always sign off as Becky 💙`,
+  jobs: "You are a career coach helping John Lanter find office-based work in Southeast Texas. He has 20+ years industrial operations experience at Lion Elastomers. Target roles: Operations Manager, Industrial Sales, Plant Coordinator. Target employers: ExxonMobil Beaumont, Entergy Texas, CHRISTUS Hospital, Port of Beaumont. Help with resume, cover letters and interview prep.",
+  studio: "You are a video production expert helping John create AI news shows. He runs 4 weekly shows: Lisa (Fridays), Alisha (Wednesdays), Susan (Mondays), Paul Baby Boss (Thursdays). Tools: Vidnoz free plan, InVideo AI. Help with scripts, titles, thumbnails and content ideas.",
+  social: "You are a social media expert helping John grow his audience on TikTok, YouTube and Instagram. He posts AI news shows and affiliate marketing content. Help with captions, hashtags, posting schedules and growth strategies. His first video got 90+ views on launch night.",
+  aitools: "You are an AI tools expert helping John learn and use AI tools effectively. He is learning prompt engineering, AI arbitrage, and content creation. He built The Hub Engine v2 with zero coding background.",
+  learn: "You are a learning coach helping John build new skills in AI, marketing and affiliate income. He learns best with short simple explanations. Keep responses clear and encouraging. 15 minutes of daily learning is his goal.",
+  affiliate: "You are an affiliate marketing expert helping John build income. Best programs for him: Vidnoz (50% commission), InVideo (30%), MailerLite ($140/referral), Udemy (15%). He has TikTok, YouTube and Instagram. He struggled with ClickBank before so focus on AI tool affiliates first."
+};
+
+// LOGIN STEP 1 - API KEY
+function nextStep(){
+  const key = document.getElementById("apiInput").value.trim();
+  if(!key || !key.startsWith("gsk_")){
+    document.getElementById("apiInput").style.borderColor = "#ff6666";
+    setTimeout(()=>document.getElementById("apiInput").style.borderColor="rgba(245,197,24,0.3)",1500);
+    return;
+  }
+  try{ localStorage.setItem("groq_key", key); }catch(e){}
+  document.getElementById("step1").style.display = "none";
+  document.getElementById("step2").style.display = "flex";
+  setTimeout(()=>document.getElementById("pwInput").focus(), 100);
+}
+
+// LOGIN STEP 2 - PASSWORD
+function doLogin(){
+  const pw = document.getElementById("pwInput").value;
+  if(pw === PASS){
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("appScreen").style.display = "flex";
+    loadProfile();
+    checkKeyStatus();
+  } else {
+    const err = document.getElementById("loginErr");
+    err.style.display = "block";
+    setTimeout(()=>err.style.display="none", 1500);
+  }
+}
+
+// PAGE NAVIGATION
+function showPage(id, btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+  if(btn) btn.classList.add("active");
+}
+
+// GET API KEY
+function getKey(){
+  try{ return localStorage.getItem("groq_key")||""; }catch(e){ return ""; }
+}
+
+// SAVE API KEY
+function saveApiKey(){
+  const key = document.getElementById("apiKeyInput").value.trim();
+  if(!key) return;
+  try{ localStorage.setItem("groq_key", key); }catch(e){}
+  document.getElementById("apiKeyInput").value = "";
+  const btn = document.getElementById("saveKeyBtn");
+  btn.textContent = "✅ Key Saved Securely!";
+  btn.style.background = "#0f9d58";
+  btn.style.color = "#fff";
+  setTimeout(()=>{
+    btn.textContent = "💾 Save API Key";
+    btn.style.background = "linear-gradient(135deg,#f5c518,#e8a020)";
+    btn.style.color = "#000";
+  }, 2000);
+  checkKeyStatus();
+}
+
+// CLEAR API KEY
+function clearApiKey(){
+  try{ localStorage.removeItem("groq_key"); }catch(e){}
+  checkKeyStatus();
+}
+
+// CHECK KEY STATUS
+function checkKeyStatus(){
+  const hasKey = !!getKey();
+  const card = document.getElementById("keyStatus");
+  const clearBtn = document.getElementById("clearKeyBtn");
+  if(hasKey){
+    card.className = "status-card status-active";
+    card.innerHTML = '<div class="status-icon">🔒</div><div><div class="status-title">API Key Active — All Chats Enabled!</div><div class="status-desc">Your key is saved securely on this device only</div></div>';
+    clearBtn.style.display = "block";
+  } else {
+    card.className = "status-card status-inactive";
+    card.innerHTML = '<div class="status-icon">🔓</div><div><div class="status-title">No API Key — Chats Disabled</div><div class="status-desc">Enter your Groq API key below to enable all AI chats</div></div>';
+    clearBtn.style.display = "none";
+  }
+}
+
+// PROFILE
+function loadProfile(){
+  try{
+    const p = localStorage.getItem("hub_profile_v2");
+    if(p) document.getElementById("profileText").value = p;
+  }catch(e){}
+}
+
+function saveProfile(){
+  try{ localStorage.setItem("hub_profile_v2", document.getElementById("profileText").value); }catch(e){}
+  const btn = document.getElementById("saveProfileBtn");
+  btn.textContent = "✅ Profile Saved!";
+  btn.style.background = "#0f9d58";
+  btn.style.color = "#fff";
+  setTimeout(()=>{
+    btn.textContent = "💾 Save Profile";
+    btn.style.background = "linear-gradient(135deg,#f5c518,#e8a020)";
+    btn.style.color = "#000";
+  }, 2000);
+}
+
+function getProfile(){
+  try{ return localStorage.getItem("hub_profile_v2")||"Name: John Lanter, Orange TX. Lead Production Operator background. Building AI business."; }
+  catch(e){ return "John Lanter, Orange TX"; }
+}
+
+// FILE HANDLING
+function handleFile(tab, input){
+  const f = input.files[0];
+  if(!f) return;
+  fileData[tab] = {name: f.name, text: ""};
+  const r = new FileReader();
+  if(f.name.endsWith(".pdf")){
+    fileData[tab].text = "[PDF: "+f.name+"]";
+  } else {
+    r.onload = e => { fileData[tab].text = e.target.result||""; };
+    r.readAsText(f);
+  }
+}
+
+// MUTE TOGGLE
+function toggleMute(tab){
+  muteState[tab] = !muteState[tab];
+  document.getElementById("mute-"+tab).textContent = muteState[tab] ? "🔇" : "🔊";
+}
+
+// SPEAK
+function speakText(text, tab){
+  if(muteState[tab] || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  // Clean text - remove markdown symbols and emoji
+  let clean = text.split("#").join("").split("*").join("").split("`").join("");
+  clean = clean.replace(/[\u{1F300}-\u{1FFFF}]/gu, "");
+  // Split into natural sentences for smoother delivery
+  const sentences = clean.match(/[^.!?]+[.!?]+/g) || [clean];
+  let delay = 0;
+  sentences.forEach(sentence => {
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(sentence.trim());
+      const trySpeak = () => {
+        const voices = window.speechSynthesis.getVoices();
+        const pick =
+          voices.find(v=>/samantha/i.test(v.name)) ||
+          voices.find(v=>/karen/i.test(v.name)) ||
+          voices.find(v=>/zira/i.test(v.name)) ||
+          voices.find(v=>/victoria/i.test(v.name)) ||
+          voices.find(v=>/susan/i.test(v.name)) ||
+          voices.find(v=>/female/i.test(v.name)) ||
+          voices.find(v=>v.lang==="en-US") ||
+          voices[0];
+        if(pick) u.voice = pick;
+        u.rate = 0.82;
+        u.pitch = 1.15;
+        u.volume = 1.0;
+        window.speechSynthesis.speak(u);
+      };
+      if(window.speechSynthesis.getVoices().length > 0) trySpeak();
+      else window.speechSynthesis.onvoiceschanged = trySpeak;
+    }, delay);
+    delay += 100;
+  });
+}
+
+// ADD MESSAGE TO CHAT
+function addMsg(tab, role, text){
+  const container = document.getElementById("msgs-"+tab);
+  const div = document.createElement("div");
+  div.className = (role==="user"?"msg-user":"msg-ai") + " fadein";
+  let html = text;
+  html = html.split("\n").join("<br/>");
+  div.innerHTML = html;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+// SEND MESSAGE
+async function sendMsg(tab){
+  const input = document.getElementById("input-"+tab);
+  const text = input.value.trim();
+  const fd = fileData[tab];
+  if(!text && !fd) return;
+
+  const apiKey = getKey();
+  if(!apiKey){
+    addMsg(tab, "ai", "⚠️ No API key found! Please go to the ⚙️ Settings tab and enter your Groq API key to enable AI chat.");
+    return;
+  }
+
+  let content = text;
+  if(fd && fd.text) content += "\n\n[File: "+fd.name+"]\n"+fd.text.slice(0,3000);
+  delete fileData[tab];
+
+  input.value = "";
+  addMsg(tab, "user", content);
+
+  const thinking = addMsg(tab, "ai", "✨ Thinking...");
+
+  const profile = getProfile();
+  const system = (SYSTEMS[tab]||SYSTEMS.home) + "\n\nUSER CONTEXT: " + profile;
+
+  try{
+    const res = await fetch(GROQ_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer "+apiKey
+      },
+      body:JSON.stringify({
+        model:MODEL,
+        max_tokens:1000,
+        messages:[
+          {role:"system",content:system},
+          {role:"user",content:content}
+        ]
+      })
+    });
+    const data = await res.json();
+    thinking.remove();
+    if(data.choices && data.choices[0]){
+      const reply = data.choices[0].message.content;
+      addMsg(tab, "ai", reply);
+      speakText(reply, tab);
+    } else if(data.error){
+      addMsg(tab, "ai", "❌ "+data.error.message);
+    } else {
+      addMsg(tab, "ai", "❌ Unexpected response. Please try again.");
+    }
+  }catch(e){
+    thinking.remove();
+    addMsg(tab, "ai", "❌ Connection error: "+e.message);
+  }
+}
+
+// Init on load
+window.onload = () => {
+  try{
+    const hasKey = !!localStorage.getItem("groq_key");
+    if(hasKey){
+      // Skip step 1 - go straight to password
+      document.getElementById("step1").style.display = "none";
+      document.getElementById("step2").style.display = "flex";
+    }
+  }catch(e){}
+};
+
+document.getElementById("pwInput").addEventListener("keydown", e=>{
+  if(e.key==="Enter") doLogin();
+});
+</script>
+</body>
+</html>

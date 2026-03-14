@@ -1152,16 +1152,13 @@ async function speakText(text, tab){
         setTimeout(trySpeak, 200); 
         return; 
       }
-      const pick =
-        voices.find(v => v.name === 'Samantha') ||
-        voices.find(v => v.name === 'Google US English') ||
-        voices.find(v => v.name === 'Karen') ||
-        voices.find(v => v.name === 'Moira') ||
-        voices.find(v => v.name === 'Tessa') ||
-        voices.find(v => v.name === 'Zira') ||
-        voices.find(v => v.lang === 'en-US' && v.localService === false) ||
-        voices.find(v => v.lang === 'en-US') ||
-        voices[0];
+      const BECKY_VOICES = [
+  'j98abMrE0ALhypC19Bnz', // British Female - PRIMARY
+  'DODLEQrClDo8wCz460ld', // British Female - BACKUP
+  'yJZfPxA22QHc2o8NrsQ4', // fallback
+  'LEnmbrrxYsUYS7vsRRwD', // fallback
+  'SvFzIGvZxc9ghbZNHVPC'  // fallback
+];
       if(pick) u.voice = pick;
       u.rate = 1.05;
       u.pitch = 1.35;

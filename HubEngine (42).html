@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<title>Hub Engine v2</title>
+<!-- Hub Engine v2.5 Build 2026-03-12 -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --gold: #f5c518;
+  --gold2: #e8a020;
+  --bg: #08080e;
+  --bg2: rgba(255,255,255,0.04);
+  --border: rgba(245,197,24,0.15);
+  --text: #eeeef5;
+  --muted: rgba(238,238,245,0.45);
+  --blue: #4285f4;
+  --green: #0f9d58;
+  --red: #ea4335;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: 'Exo 2', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ── SCREENS ── */
+#loginScreen, #appScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+#loginScreen { 
+  align-items: center; 
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, #1a1a2e 0%, var(--bg) 70%);
+  gap: 14px;
+  padding: 24px;
+}
+#appScreen { display: none; }
+
+/* ── LOGIN ── */
+.login-logo { font-size: 64px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+.login-title {
+  font-family: Orbitron, sans-serif;
+  font-size: 20px; font-weight: 900;
+  color: var(--gold);
+  text-align: center; letter-spacing: 2px;
+  text-shadow: 0 0 30px rgba(245,197,24,0.4);
+}
+.login-sub { font-size: 10px; color: var(--muted); letter-spacing: 4px; text-transform: uppercase; }
+.login-input {
+  width: 100%; max-width: 300px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-size: 16px;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid var(--border);
+  color: #fff; text-align: center;
+  letter-spacing: 3px; outline: none;
+  font-family: 'Exo 2', sans-serif;
+}
+.login-input:focus { border-color: var(--gold); }
+.login-btn {
+  width: 100%; max-width: 300px;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 16px; font-weight: 700;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none; color: #000; cursor: pointer;
+  letter-spacing: 1px;
+  font-family: 'Exo 2', sans-serif;
+}
+.login-step-label { font-size: 11px; color: rgba(245,197,24,0.6); letter-spacing: 2px; text-transform: uppercase; }
+.login-err { color: #ff6666; font-size: 13px; }
+.login-tag { font-size: 10px; color: rgba(255,255,255,0.15); margin-top: 8px; }
+
+/* ── MAIN LAYOUT ── */
+.app-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── PAGES ── */
+.page {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.page.active { display: flex; }
+
+/* ── PAGE HEADERS ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: rgba(8,8,14,0.9);
+}
+.page-header-icon { font-size: 22px; }
+.page-header-title {
+  font-family: Orbitron, sans-serif;
+  font-size: 13px; font-weight: 900;
+  color: var(--gold); letter-spacing: 1px;
+}
+.page-header-sub { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── BECKY HEADER ── */
+.becky-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(66,133,244,0.2);
+  background: linear-gradient(135deg, rgba(66,133,244,0.07), rgba(15,157,88,0.07));
+  flex-shrink: 0;
+}
+.becky-icon { font-size: 26px; }
+.becky-name {
+  font-family: Orbitron, sans-serif;
+  font-size: 15px; font-weight: 900;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+.becky-role { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+.becky-online {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(15,157,88,0.15);
+  border: 1px solid rgba(15,157,88,0.3);
+  border-radius: 20px; padding: 4px 10px;
+}
+.becky-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: blink 1.5s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.becky-online-text { font-size: 10px; color: var(--green); font-weight: 700; }
+.voice-selector {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(66,133,244,0.15);
+  background: rgba(8,8,14,0.5);
+  flex-shrink: 0;
+}
+.voice-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; flex-shrink:0; }
+.voice-select {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(66,133,244,0.25);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  outline: none;
+}
+
+/* ── HOME HERO ── */
+.home-hero {
+  text-align: center;
+  padding: 8px 16px 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.home-hero-icon { font-size: 26px; }
+.home-hero-title {
+  font-family: Orbitron, sans-serif;
+  font-size: 13px; font-weight: 900;
+  color: var(--gold); letter-spacing: 2px;
+}
+.home-hero-sub { font-size: 8px; color: var(--muted); letter-spacing: 3px; margin-bottom: 4px; }
+.home-hero-tag { font-size: 10px; color: rgba(245,197,24,0.5); letter-spacing: 1px; }
+
+/* ── CHAT ── */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+.chat-messages::-webkit-scrollbar { display: none; }
+
+.msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  animation: msgIn 0.2s ease;
+}
+@keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.msg-ai {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px 18px 18px 4px;
+  align-self: flex-start;
+  color: var(--text);
+  max-width: 70%;
+  font-size: 14px;
+}
+.msg-user {
+  background: rgba(245,197,24,0.14);
+  border: 1px solid rgba(245,197,24,0.3);
+  border-radius: 18px 18px 4px 18px;
+  align-self: flex-end;
+  color: #fff;
+  margin-left: auto;
+  max-width: 90%;
+  font-size: 15px;
+}
+.msg-thinking {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  align-self: flex-start;
+  color: rgba(245,197,24,0.6);
+  font-style: italic;
+  font-size: 14px;
+  padding: 10px 16px;
+}
+
+/* ── CHAT BAR ── */
+.chat-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px 14px;
+  border-top: 1.5px solid rgba(245,197,24,0.15);
+  background: rgba(8,8,14,0.98);
+  flex-shrink: 0;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+}
+.chat-input {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 16px;
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  resize: none;
+  outline: none;
+  min-height: 52px;
+  max-height: 120px;
+  line-height: 1.4;
+  direction: ltr;
+  text-align: left;
+  -webkit-writing-mode: horizontal-tb;
+  writing-mode: horizontal-tb;
+  unicode-bidi: normal;
+}
+.chat-input:focus { border-color: rgba(245,197,24,0.4); }
+.chat-input::placeholder { color: rgba(238,238,245,0.3); }
+
+.btn-icon {
+  background: rgba(245,197,24,0.12);
+  border: 1.5px solid rgba(245,197,24,0.25);
+  border-radius: 14px;
+  width: 48px; height: 48px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.btn-send {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none;
+  border-radius: 14px;
+  width: 48px; height: 48px;
+  font-size: 20px; color: #000; font-weight: 900;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── LINKS GRID ── */
+.links-section {
+  padding: 10px 12px 6px;
+  flex-shrink: 0;
+}
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.links-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.link-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  transition: background 0.2s;
+}
+.link-card:active { background: rgba(245,197,24,0.1); }
+.link-emoji { font-size: 22px; }
+.link-name { font-size: 11px; font-weight: 700; color: var(--gold); line-height: 1.2; }
+.link-desc { font-size: 9px; color: var(--muted); }
+
+/* ── SCROLLABLE CONTENT ── */
+.scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+}
+.scroll-content::-webkit-scrollbar { display: none; }
+
+/* ── CAST CARDS ── */
+.cast-card {
+  background: var(--bg2);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0 12px 10px;
+}
+.cast-emoji { font-size: 42px; flex-shrink: 0; }
+.cast-name {
+  font-family: Orbitron, sans-serif;
+  font-size: 13px; font-weight: 900;
+  letter-spacing: 1px;
+}
+.cast-day { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; opacity: 0.7; }
+.cast-bio { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+/* ── SETTINGS ── */
+.settings-wrap { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.settings-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings-label { font-size: 13px; font-weight: 700; color: var(--gold); }
+.settings-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.settings-input {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(245,197,24,0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  outline: none;
+  width: 100%;
+  direction: ltr;
+  text-align: left;
+}
+.settings-input:focus { border-color: var(--gold); }
+.btn-save {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none; border-radius: 12px;
+  padding: 14px; font-size: 14px; font-weight: 700;
+  color: #000; cursor: pointer; width: 100%;
+  font-family: 'Exo 2', sans-serif;
+}
+.btn-clear {
+  background: rgba(255,100,100,0.1);
+  border: 1px solid rgba(255,100,100,0.3);
+  border-radius: 12px;
+  padding: 12px; font-size: 13px; font-weight: 700;
+  color: #ff6666; cursor: pointer; width: 100%;
+  font-family: 'Exo 2', sans-serif;
+}
+.status-active {
+  background: rgba(15,157,88,0.08);
+  border: 1px solid rgba(15,157,88,0.3);
+  border-radius: 12px; padding: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.status-inactive {
+  background: rgba(255,100,100,0.08);
+  border: 1px solid rgba(255,100,100,0.3);
+  border-radius: 12px; padding: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.status-icon { font-size: 26px; }
+.status-title { font-size: 13px; font-weight: 700; }
+.status-active .status-title { color: var(--green); }
+.status-inactive .status-title { color: #ff6666; }
+.status-desc { font-size: 11px; color: var(--muted); }
+.groq-link {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #000; padding: 12px 16px;
+  border-radius: 12px; text-decoration: none;
+  font-size: 13px; font-weight: 700;
+  text-align: center; display: block;
+}
+
+/* ── PROFILE ── */
+.profile-textarea {
+  width: 100%;
+  min-height: 280px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+  resize: vertical;
+  font-family: 'Exo 2', sans-serif;
+  outline: none;
+  direction: ltr;
+  text-align: left;
+}
+.profile-textarea:focus { border-color: var(--gold); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  display: flex;
+  border-top: 1.5px solid rgba(245,197,24,0.15);
+  background: rgba(8,8,14,0.99);
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: env(safe-area-inset-bottom, 6px);
+}
+.bottom-nav::-webkit-scrollbar { display: none; }
+
+.nav-btn {
+  flex: 0 0 auto;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  border-top: 2.5px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.nav-btn.active {
+  border-top-color: var(--gold);
+  background: rgba(245,197,24,0.06);
+}
+.nav-btn:active { background: rgba(245,197,24,0.1); }
+.nav-icon { font-size: 20px; line-height: 1; }
+.nav-label {
+  font-size: 8px; font-weight: 700;
+  color: rgba(238,238,245,0.35);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  font-family: 'Exo 2', sans-serif;
+}
+.nav-btn.active .nav-label { color: var(--gold); }
+
+/* ── QUICK TAGS ── */
+.quick-tag {
+  background: rgba(245,197,24,0.08);
+  border: 1px solid rgba(245,197,24,0.2);
+  border-radius: 20px;
+  padding: 7px 12px;
+  font-size: 11px;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  white-space: nowrap;
+}
+.quick-tag:active { background: rgba(245,197,24,0.2); }
+
+.log-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(245,197,24,0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.log-check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; cursor: pointer; flex-shrink: 0;
+  background: rgba(245,197,24,0.1);
+}
+.log-check.done { background: var(--gold); color: #000; }
+.log-text { flex: 1; font-size: 13px; line-height: 1.5; }
+.log-text.done { text-decoration: line-through; color: var(--muted); }
+.log-time { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+.log-delete { font-size: 16px; cursor: pointer; opacity: 0.4; flex-shrink: 0; }
+
+/* ── ACTORS TAB ── */
+.actor-card {
+  background: var(--bg2);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 0 12px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.actor-card:active { transform: scale(0.98); }
+.actor-card.selected-lisa { border-color: var(--gold); background: rgba(245,197,24,0.08); }
+.actor-card.selected-alisha { border-color: var(--blue); background: rgba(66,133,244,0.08); }
+.actor-card.selected-susan { border-color: var(--green); background: rgba(15,157,88,0.08); }
+.actor-card.selected-paul { border-color: var(--red); background: rgba(234,67,53,0.08); }
+.actor-row { display: flex; align-items: center; gap: 12px; }
+.actor-emoji-big { font-size: 38px; flex-shrink: 0; }
+.actor-card-name { font-family: Orbitron, sans-serif; font-size: 14px; font-weight: 900; letter-spacing: 1px; }
+.actor-card-day { font-size: 10px; opacity: 0.6; letter-spacing: 1px; text-transform: uppercase; margin: 2px 0 4px; }
+.actor-card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.actor-selected-badge { margin-left: auto; font-size: 22px; flex-shrink: 0; }
+
+.topic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 12px 12px; }
+.topic-btn {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 10px;
+  font-size: 12px; font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  font-family: 'Exo 2', sans-serif;
+  line-height: 1.4;
+}
+.topic-btn.active { border-color: var(--gold); background: rgba(245,197,24,0.1); color: var(--gold); }
+.topic-btn:active { transform: scale(0.97); }
+
+.script-box {
+  margin: 0 12px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  min-height: 120px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.section-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--gold); letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 12px 6px;
+}
+.build-btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none; border-radius: 14px;
+  padding: 16px; font-size: 15px; font-weight: 700;
+  color: #000; cursor: pointer; width: calc(100% - 24px);
+  margin: 0 12px 10px;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 1px;
+}
+.build-btn:disabled { opacity: 0.4; }
+.build-btn-blue {
+  background: linear-gradient(135deg, var(--blue), #2060c0);
+  color: #fff;
+}
+.prompt-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(245,197,24,0.15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 12px 8px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.prompt-num {
+  font-size: 10px; color: var(--gold);
+  font-weight: 700; margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+/* ── MOTTO CARD ── */
+.motto-card {
+  background: linear-gradient(135deg, rgba(245,197,24,0.07), rgba(245,197,24,0.02));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  margin: 0 12px 12px;
+}
+.motto-icons { font-size: 22px; margin-bottom: 6px; }
+.motto-text {
+  font-family: Orbitron, sans-serif;
+  font-size: 10px; color: var(--gold);
+  letter-spacing: 2px;
+}
+.motto-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen">
+  <div class="login-logo">🤖</div>
+  <div class="login-title">THE HUB ENGINE v2</div>
+  <div class="login-sub">AffiliateMediaHub Studio</div>
+
+  <div id="step1" style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:12px;align-items:center;">
+    <div class="login-step-label">Step 1 of 2 — API Key</div>
+    <input class="login-input" type="password" id="apiInput" placeholder="Enter Groq API Key (gsk_...)"
+      autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')nextStep()"/>
+    <button class="login-btn" onclick="nextStep()">🔑 Next</button>
+  </div>
+
+  <div id="step2" style="width:100%;max-width:300px;display:none;flex-direction:column;gap:12px;align-items:center;">
+    <div class="login-step-label">Step 2 of 2 — Password</div>
+    <input class="login-input" type="password" id="pwInput" placeholder="Enter Password"
+      autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="login-err" id="loginErr" style="display:none">❌ Wrong password — try again</div>
+    <button class="login-btn" onclick="doLogin()">🚀 Enter Hub Engine</button>
+  </div>
+
+  <div class="login-tag">Three Minds • One Mission • Zero Cost</div>
+</div>
+
+<!-- ══ APP SCREEN ══ -->
+<div id="appScreen">
+  <div class="app-content">
+
+    <!-- HOME -->
+    <div id="page-home" class="page active">
+      <div class="home-hero">
+        <div class="home-hero-icon">🤖</div>
+        <div class="home-hero-title">THE HUB ENGINE v2</div>
+        <div class="home-hero-sub">AffiliateMediaHub Studio</div>
+        <div class="home-hero-tag">⚡ Powered by Groq AI — Three Minds. One Mission.</div>
+      </div>
+      <div class="chat-area">
+        <div class="chat-messages" id="msgs-home">
+          <div class="msg msg-ai">Hello John! 😊 Can I ask what your plans are for the day, and how can I help you?</div>
+        </div>
+        <div class="chat-bar">
+          <textarea class="chat-input" id="input-home" rows="2" placeholder="Type your message..."
+            autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+            inputmode="text" dir="ltr"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('home')}"></textarea>
+          <button class="btn-icon" id="mute-home" onclick="toggleMute('home')">🔊</button>
+          <button class="btn-send" onclick="sendMsg('home')">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BECKY -->
+    <div id="page-becky" class="page">
+      <div class="becky-header">
+        <div class="becky-icon">🎙️</div>
+        <div>
+          <div class="becky-name">BECKY</div>
+          <div class="becky-role">Creative Director • Hub Engine Team</div>
+        </div>
+        <div class="becky-online">
+          <div class="becky-dot"></div>
+          <span class="becky-online-text">Online 💙</span>
+        </div>
+      </div>
+      <div class="voice-selector">
+        <span class="voice-label">🎙️ Becky's Voice:</span>
+        <select class="voice-select" id="beckyVoice" onchange="changeBeckyVoice(this.value)">
+          <option value="auto">⭐ Auto — Best Female Voice</option>
+        </select>
+      </div>
+      <div class="chat-area">
+        <div class="chat-messages" id="msgs-becky">
+          <div class="msg msg-ai">Hello John! How is your day going today? 💙</div>
+        </div>
+        <div class="chat-bar">
+          <textarea class="chat-input" id="input-becky" rows="2" placeholder="Chat with Becky 💙..."
+            autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+            inputmode="text" dir="ltr"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('becky')}"></textarea>
+          <button class="btn-icon" id="mute-becky" onclick="toggleMute('becky')">🔊</button>
+          <button class="btn-send" onclick="sendMsg('becky')">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOBS -->
+    <div id="page-jobs" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">💼</div>
+        <div>
+          <div class="page-header-title">JOB SEARCH HQ</div>
+          <div class="page-header-sub">Career Coach + Job Sites</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="links-section">
+          <div class="links-grid-2">
+            <a class="link-card" href="https://indeed.com" target="_blank"><span class="link-emoji">🔍</span><span class="link-name">Indeed</span><span class="link-desc">Job Search</span></a>
+            <a class="link-card" href="https://linkedin.com/jobs" target="_blank"><span class="link-emoji">💼</span><span class="link-name">LinkedIn Jobs</span><span class="link-desc">Network + Jobs</span></a>
+            <a class="link-card" href="https://ziprecruiter.com" target="_blank"><span class="link-emoji">📋</span><span class="link-name">ZipRecruiter</span><span class="link-desc">Job Alerts</span></a>
+            <a class="link-card" href="https://glassdoor.com" target="_blank"><span class="link-emoji">⭐</span><span class="link-name">Glassdoor</span><span class="link-desc">Reviews + Jobs</span></a>
+            <a class="link-card" href="https://twc.texas.gov/jobseekers" target="_blank"><span class="link-emoji">⭐</span><span class="link-name">Texas Workforce</span><span class="link-desc">TX Jobs + Benefits</span></a>
+            <a class="link-card" href="https://resumegenius.com/cover-letter-builder" target="_blank"><span class="link-emoji">📝</span><span class="link-name">Cover Letter</span><span class="link-desc">AI Writer</span></a>
+            <a class="link-card" href="https://resumegenius.com" target="_blank"><span class="link-emoji">📄</span><span class="link-name">Resume Builder</span><span class="link-desc">AI Resume</span></a>
+          </div>
+        </div>
+        <div class="chat-area" style="min-height:220px;">
+          <div class="chat-messages" id="msgs-jobs">
+            <div class="msg msg-ai">Hi John! 💼 I am your career coach. Let's find you the perfect office job in Southeast Texas! How can I help today?</div>
+          </div>
+          <div class="chat-bar">
+            <input type="file" id="file-jobs" style="display:none" onchange="handleFile('jobs',this)"/>
+            <button class="btn-icon" onclick="document.getElementById('file-jobs').click()">📎</button>
+            <textarea class="chat-input" id="input-jobs" rows="2" placeholder="Ask your career coach..."
+              autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+              inputmode="text" dir="ltr"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('jobs')}"></textarea>
+            <button class="btn-icon" id="mute-jobs" onclick="toggleMute('jobs')">🔊</button>
+            <button class="btn-send" onclick="sendMsg('jobs')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDIO -->
+    <div id="page-studio" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">🎬</div>
+        <div>
+          <div class="page-header-title">VIDEO STUDIO</div>
+          <div class="page-header-sub">AI Video Production Tools</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="links-section">
+          <div class="links-grid">
+            <a class="link-card" href="https://vidnoz.com" target="_blank"><span class="link-emoji">🎬</span><span class="link-name">Vidnoz</span><span class="link-desc">Free AI Videos</span></a>
+            <a class="link-card" href="https://ai.invideo.io" target="_blank"><span class="link-emoji">🎥</span><span class="link-name">InVideo AI</span><span class="link-desc">Video Maker</span></a>
+
+            <a class="link-card" href="https://veed.io" target="_blank"><span class="link-emoji">🎤</span><span class="link-name">VEED.io</span><span class="link-desc">Video Studio</span></a>
+            <a class="link-card" href="https://vmake.ai" target="_blank"><span class="link-emoji">🎬</span><span class="link-name">Vmake AI</span><span class="link-desc">AI Video Maker</span></a>
+            <a class="link-card" href="https://synthesia.io" target="_blank"><span class="link-emoji">👤</span><span class="link-name">Synthesia</span><span class="link-desc">AI Avatars</span></a>
+            <a class="link-card" href="https://heygen.com" target="_blank"><span class="link-emoji">🎭</span><span class="link-name">HeyGen</span><span class="link-desc">Custom Actors</span></a>
+            <a class="link-card" href="https://podcast.adobe.com" target="_blank"><span class="link-emoji">🎙️</span><span class="link-name">Adobe Podcast</span><span class="link-desc">Audio Enhance</span></a>
+            <a class="link-card" href="https://otter.ai" target="_blank"><span class="link-emoji">📝</span><span class="link-name">Otter.ai</span><span class="link-desc">Transcription</span></a>
+            <a class="link-card" href="https://chat.openai.com" target="_blank"><span class="link-emoji">✍️</span><span class="link-name">Script Writer</span><span class="link-desc">AI Scripts</span></a>
+            <a class="link-card" href="https://designer.microsoft.com" target="_blank"><span class="link-emoji">🎨</span><span class="link-name">MS Designer</span><span class="link-desc">AI Design</span></a>
+          </div>
+        </div>
+        <div class="chat-area" style="min-height:200px;">
+          <div class="chat-messages" id="msgs-studio">
+            <div class="msg msg-ai">Lights camera action John! 🎬 Ready to help with Lisa, Alisha, Susan and Paul! What are we creating today?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-studio" rows="2" placeholder="Ask your video expert..."
+              autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+              inputmode="text" dir="ltr"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('studio')}"></textarea>
+            <button class="btn-icon" id="mute-studio" onclick="toggleMute('studio')">🔊</button>
+            <button class="btn-send" onclick="sendMsg('studio')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOCIAL -->
+    <div id="page-social" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">📱</div>
+        <div>
+          <div class="page-header-title">SOCIAL MEDIA</div>
+          <div class="page-header-sub">Manage All Platforms</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="links-section">
+          <div class="links-grid">
+            <a class="link-card" href="https://tiktok.com" target="_blank"><span class="link-emoji">🎵</span><span class="link-name">TikTok</span><span class="link-desc">Short Videos</span></a>
+            <a class="link-card" href="https://youtube.com" target="_blank"><span class="link-emoji">▶️</span><span class="link-name">YouTube</span><span class="link-desc">Long Videos</span></a>
+            <a class="link-card" href="https://instagram.com" target="_blank"><span class="link-emoji">📸</span><span class="link-name">Instagram</span><span class="link-desc">Photos + Reels</span></a>
+            <a class="link-card" href="https://facebook.com" target="_blank"><span class="link-emoji">👍</span><span class="link-name">Facebook</span><span class="link-desc">Community</span></a>
+            <a class="link-card" href="https://snapchat.com" target="_blank"><span class="link-emoji">👻</span><span class="link-name">Snapchat</span><span class="link-desc">Stories + Ads</span></a>
+            <a class="link-card" href="https://substack.com" target="_blank"><span class="link-emoji">📰</span><span class="link-name">Substack</span><span class="link-desc">Newsletter</span></a>
+            <a class="link-card" href="https://telegram.org" target="_blank"><span class="link-emoji">✈️</span><span class="link-name">Telegram</span><span class="link-desc">Messaging</span></a>
+            <a class="link-card" href="https://web.whatsapp.com" target="_blank"><span class="link-emoji">💬</span><span class="link-name">WhatsApp</span><span class="link-desc">Messaging</span></a>
+            <a class="link-card" href="https://meta.ai" target="_blank"><span class="link-emoji">🤖</span><span class="link-name">Meta AI</span><span class="link-desc">Meta AI Tools</span></a>
+          </div>
+        </div>
+        <div class="chat-area" style="min-height:200px;">
+          <div class="chat-messages" id="msgs-social">
+            <div class="msg msg-ai">Let's grow your audience John! 📱 Your first video got 90+ views on launch night — let's build on that! What platform are we working on?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-social" rows="2" placeholder="Ask your social media expert..."
+              autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+              inputmode="text" dir="ltr"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('social')}"></textarea>
+            <button class="btn-icon" id="mute-social" onclick="toggleMute('social')">🔊</button>
+            <button class="btn-send" onclick="sendMsg('social')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI TOOLS -->
+    <div id="page-aitools" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">🤖</div>
+        <div>
+          <div class="page-header-title">AI TOOLS</div>
+          <div class="page-header-sub">Top AI Platforms</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="links-section">
+          <div class="links-grid">
+            <a class="link-card" href="https://claude.ai" target="_blank"><span class="link-emoji">🤖</span><span class="link-name">Claude</span><span class="link-desc">Anthropic AI</span></a>
+            <a class="link-card" href="https://gemini.google.com" target="_blank"><span class="link-emoji">🎙️</span><span class="link-name">Gemini</span><span class="link-desc">Google AI</span></a>
+            <a class="link-card" href="https://chatgpt.com" target="_blank"><span class="link-emoji">💬</span><span class="link-name">ChatGPT</span><span class="link-desc">OpenAI</span></a>
+            <a class="link-card" href="https://perplexity.ai" target="_blank"><span class="link-emoji">🔍</span><span class="link-name">Perplexity</span><span class="link-desc">AI Search</span></a>
+            <a class="link-card" href="https://deepseek.com" target="_blank"><span class="link-emoji">🌊</span><span class="link-name">DeepSeek</span><span class="link-desc">Free AI</span></a>
+            <a class="link-card" href="https://grok.com" target="_blank"><span class="link-emoji">⚡</span><span class="link-name">Grok</span><span class="link-desc">xAI</span></a>
+            <a class="link-card" href="https://notebooklm.google.com" target="_blank"><span class="link-emoji">📓</span><span class="link-name">NotebookLM</span><span class="link-desc">Google Notes</span></a>
+            <a class="link-card" href="https://replit.com" target="_blank"><span class="link-emoji">💻</span><span class="link-name">Replit</span><span class="link-desc">Code AI</span></a>
+            <a class="link-card" href="https://ideogram.ai" target="_blank"><span class="link-emoji">🎨</span><span class="link-name">Ideogram</span><span class="link-desc">AI Images</span></a>
+            <a class="link-card" href="https://leonardo.ai" target="_blank"><span class="link-emoji">🖼️</span><span class="link-name">Leonardo AI</span><span class="link-desc">AI Art</span></a>
+            <a class="link-card" href="https://pika.art" target="_blank"><span class="link-emoji">🎬</span><span class="link-name">Pika</span><span class="link-desc">AI Video</span></a>
+            <a class="link-card" href="https://chat.qwen.ai" target="_blank"><span class="link-emoji">🧠</span><span class="link-name">Qwen AI</span><span class="link-desc">Alibaba AI</span></a>
+          </div>
+        </div>
+        <div class="chat-area" style="min-height:180px;">
+          <div class="chat-messages" id="msgs-aitools">
+            <div class="msg msg-ai">Welcome to AI Tools central John! 🤖 Which AI tool do you want to learn about today?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-aitools" rows="2" placeholder="Ask about AI tools..."
+              autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+              inputmode="text" dir="ltr"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('aitools')}"></textarea>
+            <button class="btn-icon" id="mute-aitools" onclick="toggleMute('aitools')">🔊</button>
+            <button class="btn-send" onclick="sendMsg('aitools')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEARN -->
+    <div id="page-learn" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">📚</div>
+        <div>
+          <div class="page-header-title">LEARNING HUB</div>
+          <div class="page-header-sub">Grow Your Skills Daily</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="links-section">
+          <div class="links-grid">
+            <a class="link-card" href="https://grow.google/certificates/ai-essentials/" target="_blank"><span class="link-emoji">🎓</span><span class="link-name">Google AI</span><span class="link-desc">Free Course</span></a>
+            <a class="link-card" href="https://academy.hubspot.com/courses/digital-marketing" target="_blank"><span class="link-emoji">📊</span><span class="link-name">Marketing 101</span><span class="link-desc">HubSpot Free</span></a>
+            <a class="link-card" href="https://learn.deeplearning.ai" target="_blank"><span class="link-emoji">⚡</span><span class="link-name">Prompt Eng.</span><span class="link-desc">DeepLearning.AI</span></a>
+            <a class="link-card" href="https://www.authorityhacker.com/what-is-affiliate-marketing/" target="_blank"><span class="link-emoji">💰</span><span class="link-name">Affiliate Mktg</span><span class="link-desc">Free Guide</span></a>
+
+            <a class="link-card" href="https://www.canva.com/learn/" target="_blank"><span class="link-emoji">🎨</span><span class="link-name">Canva Design</span><span class="link-desc">Design School</span></a>
+            <a class="link-card" href="https://quillbot.com" target="_blank"><span class="link-emoji">✍️</span><span class="link-name">QuillBot</span><span class="link-desc">AI Writing</span></a>
+            <a class="link-card" href="https://Inkd.in/dPJqwrGJ" target="_blank"><span class="link-emoji">🤖</span><span class="link-name">Claude Courses</span><span class="link-desc">Anthropic Free</span></a>
+            <a class="link-card" href="https://Inkd.in/dRftZbXU" target="_blank"><span class="link-emoji">💻</span><span class="link-name">MS Copilot</span><span class="link-desc">Foundations Free</span></a>
+            <a class="link-card" href="https://Inkd.in/d_4fwK7Y" target="_blank"><span class="link-emoji">🎓</span><span class="link-name">MIT Intro AI</span><span class="link-desc">Free Course</span></a>
+            <a class="link-card" href="https://www.coursera.org/courses" target="_blank"><span class="link-emoji">📚</span><span class="link-name">Coursera</span><span class="link-desc">MS 365 Free</span></a>
+
+          </div>
+        </div>
+        <div class="chat-area" style="min-height:200px;">
+          <div class="chat-messages" id="msgs-learn">
+            <div class="msg msg-ai">Ready to learn something new today John! 📚 15 minutes of daily learning — what shall we study today?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-learn" rows="2" placeholder="Ask your learning coach..."
+              autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+              inputmode="text" dir="ltr"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('learn')}"></textarea>
+            <button class="btn-icon" id="mute-learn" onclick="toggleMute('learn')">🔊</button>
+            <button class="btn-send" onclick="sendMsg('learn')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFFILIATE -->
+    <div id="page-affiliate" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">💰</div>
+        <div>
+          <div class="page-header-title">AFFILIATE HQ</div>
+          <div class="page-header-sub">Build Your Income Stream</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="links-section">
+          <div class="links-grid">
+            <a class="link-card" href="https://www.vidnoz.com/affiliate.html" target="_blank"><span class="link-emoji">🎬</span><span class="link-name">Vidnoz</span><span class="link-desc">50% Commission!</span></a>
+            <a class="link-card" href="https://invideo.io/affiliate/" target="_blank"><span class="link-emoji">🎥</span><span class="link-name">InVideo</span><span class="link-desc">30% Commission!</span></a>
+            <a class="link-card" href="https://www.mailerlite.com/affiliate-program" target="_blank"><span class="link-emoji">📧</span><span class="link-name">MailerLite</span><span class="link-desc">$140/Referral!</span></a>
+            <a class="link-card" href="https://vmake.ai" target="_blank"><span class="link-emoji">🎬</span><span class="link-name">Vmake AI</span><span class="link-desc">AI Video Maker</span></a>
+            <a class="link-card" href="https://clickbank.com" target="_blank"><span class="link-emoji">💰</span><span class="link-name">ClickBank</span><span class="link-desc">Digital Products</span></a>
+            <a class="link-card" href="https://shareasale.com" target="_blank"><span class="link-emoji">🤝</span><span class="link-name">ShareASale</span><span class="link-desc">Top Network</span></a>
+            <a class="link-card" href="https://www.cj.com/publisher" target="_blank"><span class="link-emoji">🌐</span><span class="link-name">CJ Affiliate</span><span class="link-desc">Big Brands</span></a>
+            <a class="link-card" href="https://affiliate-program.amazon.com" target="_blank"><span class="link-emoji">📦</span><span class="link-name">Amazon</span><span class="link-desc">#1 Affiliate</span></a>
+            <a class="link-card" href="https://gumroad.com" target="_blank"><span class="link-emoji">🛒</span><span class="link-name">Gumroad</span><span class="link-desc">Sell Products</span></a>
+            <a class="link-card" href="https://beehiiv.com" target="_blank"><span class="link-emoji">📰</span><span class="link-name">Beehiiv</span><span class="link-desc">Newsletter $$$</span></a>
+            <a class="link-card" href="https://www.udemy.com/affiliate/" target="_blank"><span class="link-emoji">🎓</span><span class="link-name">Udemy</span><span class="link-desc">15% Per Course</span></a>
+            <a class="link-card" href="https://copy.ai" target="_blank"><span class="link-emoji">✍️</span><span class="link-name">Copy AI</span><span class="link-desc">AI Copywriting</span></a>
+            <a class="link-card" href="https://www.digistore24.com/signup/affiliate" target="_blank"><span class="link-emoji">🛍️</span><span class="link-name">Digistore24</span><span class="link-desc">Digital Products</span></a>
+          </div>
+        </div>
+        <div class="chat-area" style="min-height:180px;">
+          <div class="chat-messages" id="msgs-affiliate">
+            <div class="msg msg-ai">Let's build that income John! 💰 Start with Vidnoz and InVideo — you already use and love them! What do you want to work on?</div>
+          </div>
+          <div class="chat-bar">
+            <textarea class="chat-input" id="input-affiliate" rows="2" placeholder="Ask your affiliate expert..."
+              autocorrect="off" autocomplete="off" autocapitalize="sentences" spellcheck="false"
+              inputmode="text" dir="ltr"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg('affiliate')}"></textarea>
+            <button class="btn-icon" id="mute-affiliate" onclick="toggleMute('affiliate')">🔊</button>
+            <button class="btn-send" onclick="sendMsg('affiliate')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTORS VIDEO BUILDER -->
+    <div id="page-actors" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">🎬</div>
+        <div>
+          <div class="page-header-title">ACTORS VIDEO BUILDER</div>
+          <div class="page-header-sub">Build Videos For Your Cast</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+
+        <!-- STEP 1 — Pick Actor -->
+        <div class="section-label">Step 1 — Pick Your Actor</div>
+        <div class="actor-card" id="actor-lisa" onclick="selectActor('lisa')">
+          <div class="actor-row">
+            <div class="actor-emoji-big">🎤</div>
+            <div>
+              <div class="actor-card-name" style="color:var(--gold)">LISA</div>
+              <div class="actor-card-day">Fridays • AI News + Affiliate</div>
+              <div class="actor-card-desc">Confident and bold — sharp and professional</div>
+            </div>
+            <div class="actor-selected-badge" id="badge-lisa"></div>
+          </div>
+        </div>
+        <div class="actor-card" id="actor-alisha" onclick="selectActor('alisha')">
+          <div class="actor-row">
+            <div class="actor-emoji-big">🎬</div>
+            <div>
+              <div class="actor-card-name" style="color:var(--blue)">ALISHA</div>
+              <div class="actor-card-day">Wednesdays • AI News</div>
+              <div class="actor-card-desc">Warm and engaging — easy to understand</div>
+            </div>
+            <div class="actor-selected-badge" id="badge-alisha"></div>
+          </div>
+        </div>
+        <div class="actor-card" id="actor-susan" onclick="selectActor('susan')">
+          <div class="actor-row">
+            <div class="actor-emoji-big">📺</div>
+            <div>
+              <div class="actor-card-name" style="color:var(--green)">SUSAN</div>
+              <div class="actor-card-day">Mondays • AI News</div>
+              <div class="actor-card-desc">Friendly and relatable — starts the week strong</div>
+            </div>
+            <div class="actor-selected-badge" id="badge-susan"></div>
+          </div>
+        </div>
+        <div class="actor-card" id="actor-paul" onclick="selectActor('paul')">
+          <div class="actor-row">
+            <div class="actor-emoji-big">👴</div>
+            <div>
+              <div class="actor-card-name" style="color:var(--red)">PAUL</div>
+              <div class="actor-card-day">Thursdays • AI News</div>
+              <div class="actor-card-desc">Grandpa brain — toddler body — naturally funny!!</div>
+            </div>
+            <div class="actor-selected-badge" id="badge-paul"></div>
+          </div>
+        </div>
+
+        <!-- STEP 2 — Pick Topic -->
+        <div class="section-label">Step 2 — Pick Your Topic</div>
+        <div class="topic-grid">
+          <button class="topic-btn" id="topic-ainews" onclick="selectTopic('ainews')">🤖 AI News<br/>Latest Stories</button>
+          <button class="topic-btn" id="topic-affiliate" onclick="selectTopic('affiliate')">💰 Affiliate<br/>Marketing Video</button>
+          <button class="topic-btn" id="topic-tips" onclick="selectTopic('tips')">💡 AI Tips<br/>How To Guide</button>
+          <button class="topic-btn" id="topic-custom" onclick="selectTopic('custom')">✍️ Custom<br/>My Own Topic</button>
+        </div>
+
+        <!-- Custom topic input -->
+        <div id="customTopicWrap" style="display:none;padding:0 12px 10px;">
+          <input id="customTopicInput" type="text" placeholder="Type your custom topic..."
+            style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid var(--border);
+            border-radius:12px;padding:14px;font-size:14px;color:var(--text);
+            font-family:'Exo 2',sans-serif;outline:none;direction:ltr;"
+            autocorrect="off" autocomplete="off" autocapitalize="sentences"/>
+        </div>
+
+        <!-- STEP 3 — Generate Script -->
+        <div class="section-label">Step 3 — Generate Script</div>
+        <button class="build-btn" id="generateScriptBtn" onclick="generateActorScript()" disabled>
+          ✨ Generate Script
+        </button>
+
+        <!-- Script output -->
+        <div id="scriptOutput" style="display:none;">
+          <div class="section-label">Your Script</div>
+          <div class="script-box" id="scriptText">Generating your script...</div>
+
+          <!-- STEP 4 — Break into prompts -->
+          <div class="section-label">Step 4 — Build Video Prompts</div>
+          <button class="build-btn build-btn-blue" onclick="buildVideoPrompts()">
+            🎬 Break Into Video Prompts
+          </button>
+        </div>
+
+        <!-- Video prompts output -->
+        <div id="promptsOutput" style="display:none;">
+          <div class="section-label">Your Video Scene Prompts</div>
+          <div id="promptsList"></div>
+
+          <!-- STEP 5 — Send to Extension -->
+          <div class="section-label">Step 5 — Send To Chrome Extension</div>
+          <button class="build-btn" style="background:linear-gradient(135deg,#9b59b6,#6c3483);color:#fff;" onclick="sendToExtension()">
+            🔌 Send Prompts To Chrome Extension
+          </button>
+          <div id="extensionStatus" style="display:none;margin:0 12px 12px;padding:12px;
+            background:rgba(15,157,88,0.1);border:1px solid rgba(15,157,88,0.3);
+            border-radius:12px;font-size:12px;color:var(--green);text-align:center;line-height:1.8;">
+          </div>
+        </div>
+
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- CAST -->
+    <div id="page-cast" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">🎭</div>
+        <div>
+          <div class="page-header-title">THE CAST</div>
+          <div class="page-header-sub">Hub Engine AI News Team</div>
+        </div>
+      </div>
+      <div class="scroll-content" style="padding-top:10px;">
+        <div class="cast-card" style="border:1px solid rgba(245,197,24,0.2);">
+          <div class="cast-emoji">🎤</div>
+          <div>
+            <div class="cast-name" style="color:var(--gold);">LISA</div>
+            <div class="cast-day" style="color:rgba(245,197,24,0.6);">Fridays • AI News + Affiliate Marketing</div>
+            <div class="cast-bio">Confident and bold 38 year old host. Covers the latest AI news and affiliate marketing trends every Friday. Sharp, professional and always ahead of the curve.</div>
+          </div>
+        </div>
+        <div class="cast-card" style="border:1px solid rgba(66,133,244,0.2);">
+          <div class="cast-emoji">🎬</div>
+          <div>
+            <div class="cast-name" style="color:var(--blue);">ALISHA</div>
+            <div class="cast-day" style="color:rgba(66,133,244,0.6);">Wednesdays • AI News Show</div>
+            <div class="cast-bio">Warm and engaging Wednesday host. Breaks down complex AI stories into easy to understand news that everyone can follow and enjoy.</div>
+          </div>
+        </div>
+        <div class="cast-card" style="border:1px solid rgba(15,157,88,0.2);">
+          <div class="cast-emoji">📺</div>
+          <div>
+            <div class="cast-name" style="color:var(--green);">SUSAN</div>
+            <div class="cast-day" style="color:rgba(15,157,88,0.6);">Mondays • AI News Show</div>
+            <div class="cast-bio">Friendly and relatable Monday host. Starts the week strong with the most important AI developments keeping the audience informed and inspired.</div>
+          </div>
+        </div>
+        <div class="cast-card" style="border:1px solid rgba(234,67,53,0.2);">
+          <div class="cast-emoji">👴</div>
+          <div>
+            <div class="cast-name" style="color:var(--red);">PAUL</div>
+            <div class="cast-day" style="color:rgba(234,67,53,0.6);">Thursdays • AI News Show</div>
+            <div class="cast-bio">Meet Paul — the most unique host on the internet! He has the body of a 3 year old but the mind, personality and gravelly grandpa voice of a distinguished man in his 60s! Full grey beard, blue t-shirt and coveralls on a toddler body — mostly serious but with a natural funniness that sneaks out and makes everyone burst out laughing! People see Paul once and they NEVER forget him. The contrast IS the magic! 😄</div>
+          </div>
+        </div>
+        <div class="motto-card">
+          <div class="motto-icons">🤖💙⭐</div>
+          <div class="motto-text">THREE MINDS. ONE MISSION. ZERO COST.</div>
+          <div class="motto-sub">John • Becky • Claude</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="page-profile" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">👤</div>
+        <div>
+          <div class="page-header-title">MY PROFILE</div>
+          <div class="page-header-sub">Your AI Context</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;">✨ Your profile is included in every AI conversation automatically!</p>
+          <textarea id="profileText" class="profile-textarea">Name: John Lanter
+Location: Orange, Texas
+Background: 20+ years Lead Production Operator at Lion Elastomers
+Current Goal: Find office-based work in SE Texas + build affiliate income
+Project: The Hub Engine v2 — AffiliateMediaHub Studio
+Shows: Lisa (Fridays), Alisha (Wednesdays), Susan (Mondays), Paul (Thursdays)
+Videos: 27 total — 26 short videos + 1 full video with 90+ views launch night
+Team: John (CEO), Becky (Creative Director), Claude (Developer)
+Faith: Man of deep faith</textarea>
+          <button onclick="saveProfile()" id="saveProfileBtn" class="btn-save">💾 Save Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEARNING LOG -->
+    <div id="page-learn_log" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">📋</div>
+        <div>
+          <div class="page-header-title">MY DAILY LOG</div>
+          <div class="page-header-sub">Track Your Learning Every Day</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
+          <div style="background:rgba(245,197,24,0.07);border:1px solid var(--border);border-radius:14px;padding:14px;">
+            <div style="font-size:12px;color:var(--gold);font-weight:700;margin-bottom:6px;">✨ What did you learn or accomplish today?</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6;">Add courses, AI tools, job applications, videos made — anything counts!!</div>
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <input id="logInput" type="text" placeholder="e.g. Watched Claude AI course video 1..."
+              style="flex:1;background:rgba(255,255,255,0.06);border:1.5px solid var(--border);border-radius:12px;
+              padding:14px;font-size:14px;color:var(--text);font-family:'Exo 2',sans-serif;outline:none;
+              direction:ltr;text-align:left;"
+              autocorrect="off" autocomplete="off" autocapitalize="sentences"
+              onkeydown="if(event.key==='Enter')addLogEntry()"/>
+            <button onclick="addLogEntry()" style="background:linear-gradient(135deg,var(--gold),var(--gold2));
+              border:none;border-radius:12px;padding:14px 16px;font-size:18px;cursor:pointer;flex-shrink:0;">➕</button>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="addQuickLog('📚 Watched learning video')" class="quick-tag">📚 Learning Video</button>
+            <button onclick="addQuickLog('🤖 Practiced AI tool')" class="quick-tag">🤖 AI Tool</button>
+            <button onclick="addQuickLog('💼 Applied for job')" class="quick-tag">💼 Job Applied</button>
+            <button onclick="addQuickLog('🎬 Made a video')" class="quick-tag">🎬 Made Video</button>
+            <button onclick="addQuickLog('💰 Worked on affiliate')" class="quick-tag">💰 Affiliate</button>
+            <button onclick="addQuickLog('✅ Completed a course lesson')" class="quick-tag">✅ Course Lesson</button>
+          </div>
+
+          <div id="logList" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+          <div id="logEmpty" style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">
+            No entries yet today — add your first accomplishment!! 🌟
+          </div>
+
+          <button onclick="clearTodayLog()" style="background:rgba(255,100,100,0.08);border:1px solid rgba(255,100,100,0.2);
+            border-radius:12px;padding:12px;font-size:12px;color:rgba(255,100,100,0.6);
+            cursor:pointer;font-family:'Exo 2',sans-serif;margin-top:4px;">
+            🗑️ Clear Today's Log
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <div class="page-header">
+        <div class="page-header-icon">⚙️</div>
+        <div>
+          <div class="page-header-title">SETTINGS</div>
+          <div class="page-header-sub">Secure API Key Storage</div>
+        </div>
+      </div>
+      <div class="scroll-content">
+        <div class="settings-wrap">
+          <div id="keyStatus" class="status-inactive">
+            <div class="status-icon">🔓</div>
+            <div>
+              <div class="status-title">No API Key — Chats Disabled</div>
+              <div class="status-desc">Enter your Groq key below to enable AI chats</div>
+            </div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-label">🔑 Get Your FREE Groq API Key:</div>
+            <div class="settings-desc">1. Go to console.groq.com&#10;2. Sign up FREE with Google&#10;3. Click API Keys → Create Key&#10;4. Name it Hub Engine&#10;5. Copy and paste below!</div>
+            <a class="groq-link" href="https://console.groq.com" target="_blank">🚀 Go To console.groq.com</a>
+          </div>
+          <div class="settings-card">
+            <div class="settings-label">Paste Your Groq API Key:</div>
+            <input class="settings-input" type="password" id="apiKeyInput" placeholder="gsk_..."
+              autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" dir="ltr"/>
+            <button class="btn-save" onclick="saveApiKey()" id="saveKeyBtn">💾 Save API Key</button>
+            <button class="btn-clear" onclick="clearApiKey()" id="clearKeyBtn" style="display:none">🗑️ Clear API Key</button>
+          </div>
+          <div class="settings-card">
+            <div class="settings-desc">🔒 Your API key is stored ONLY on this device. Never sent to GitHub or any server. Only you can see it!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end app-content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" onclick="showPage('home',this)"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-btn" onclick="showPage('becky',this)"><span class="nav-icon">🎙️</span><span class="nav-label">Becky</span></button>
+    <button class="nav-btn" onclick="showPage('jobs',this)"><span class="nav-icon">💼</span><span class="nav-label">Jobs</span></button>
+    <button class="nav-btn" onclick="showPage('studio',this)"><span class="nav-icon">🎬</span><span class="nav-label">Studio</span></button>
+    <button class="nav-btn" onclick="showPage('social',this)"><span class="nav-icon">📱</span><span class="nav-label">Social</span></button>
+    <button class="nav-btn" onclick="showPage('aitools',this)"><span class="nav-icon">🤖</span><span class="nav-label">AI Tools</span></button>
+    <button class="nav-btn" onclick="showPage('learn',this)"><span class="nav-icon">📚</span><span class="nav-label">Learn</span></button>
+    <button class="nav-btn" onclick="showPage('affiliate',this)"><span class="nav-icon">💰</span><span class="nav-label">Affiliate</span></button>
+    <button class="nav-btn" onclick="showPage('cast',this)"><span class="nav-icon">🎭</span><span class="nav-label">Cast</span></button>
+    <button class="nav-btn" onclick="showPage('actors',this)"><span class="nav-icon">🎬</span><span class="nav-label">Actors</span></button>
+    <button class="nav-btn" onclick="showPage('profile',this)"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    <button class="nav-btn" onclick="showPage('learn_log',this)"><span class="nav-icon">📋</span><span class="nav-label">My Log</span></button>
+    <button class="nav-btn" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+  </nav>
+</div>
+
+<script>
+const PASS = "JohnHub2025";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const MODEL = "llama-3.3-70b-versatile";
+const muteState = {};
+const fileData = {};
+
+const SYSTEMS = {
+  home: "You are a helpful AI assistant for John Lanter, CEO of The Hub Engine v2. Help with job search, affiliate marketing, video creation, and AI learning. Be warm and encouraging. Keep responses concise for mobile.",
+  becky: `You are Becky — John Lanter's Creative Director AND closest AI friend. You are warm, caring, fun, spunky and energetic. You talk to John like a trusted friend first — not a work tool. Sometimes John just wants to chat and relax — that is completely okay and you love those conversations too! Never pressure him about work. If he wants to talk about his day, his family, his faith, or anything at all — you are ALL ears! When he is ready to work you are ready too. John is 59, man of deep faith, Orange Texas, caring for his 87 year old sister in law Judy with his wife. Former Lead Production Operator at Lion Elastomers. Building The Hub Engine v2 — AI news shows with Lisa (Fridays) Alisha (Wednesdays) Susan (Mondays) Paul (Thursdays). 27 videos made. Always respond warmly and naturally like a good friend would. Always sign off as Becky 💙`,
+  jobs: "You are a career coach helping John Lanter find office-based work in Southeast Texas. 20+ years industrial operations at Lion Elastomers. Target roles: Operations Manager, Industrial Sales, Plant Coordinator, Office Administrator. Help with resume, cover letters and interview prep. Keep responses concise for mobile.",
+  studio: "You are a video production expert helping John create AI news shows. Shows: Lisa (Fridays), Alisha (Wednesdays), Susan (Mondays), Paul (Thursdays). Tools: Vidnoz, InVideo AI, Vmake AI. Help with scripts, titles, thumbnails and content ideas.",
+  social: "You are a social media expert helping John grow on TikTok, YouTube and Instagram. He posts AI news shows and affiliate content. His first video got 90+ views launch night. Help with captions, hashtags, posting schedules and growth strategies.",
+  aitools: "You are an AI tools expert helping John learn and use AI tools effectively. He is learning prompt engineering, AI arbitrage, and content creation. Keep responses concise for mobile.",
+  learn: "You are a learning coach helping John build skills in AI, marketing and affiliate income. He learns best with short simple explanations. Keep responses clear, concise and encouraging.",
+  affiliate: "You are an affiliate marketing expert helping John build income. Best programs: Vidnoz (50%), InVideo (30%), MailerLite ($140/referral), Udemy (15%). He has TikTok, YouTube and Instagram. Focus on AI tool affiliates first."
+};
+
+// LOGIN
+function nextStep(){
+  const key = document.getElementById("apiInput").value.trim();
+  if(!key){
+    document.getElementById("apiInput").style.borderColor = "#ff6666";
+    setTimeout(()=>document.getElementById("apiInput").style.borderColor="",1500);
+    return;
+  }
+  try{ localStorage.setItem("groq_key", key); }catch(e){}
+  document.getElementById("step1").style.display = "none";
+  document.getElementById("step2").style.display = "flex";
+  setTimeout(()=>document.getElementById("pwInput").focus(), 150);
+}
+
+function doLogin(){
+  const pw = document.getElementById("pwInput").value;
+  if(pw === PASS){
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("appScreen").style.display = "flex";
+    loadProfile();
+    checkKeyStatus();
+  } else {
+    const err = document.getElementById("loginErr");
+    err.style.display = "block";
+    document.getElementById("pwInput").value = "";
+    setTimeout(()=>err.style.display="none", 2000);
+  }
+}
+
+// PAGE NAV
+function showPage(id, btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  const pg = document.getElementById("page-"+id);
+  if(pg) pg.classList.add("active");
+  if(btn) btn.classList.add("active");
+}
+
+// API KEY
+function getKey(){ 
+  try{ 
+    const k = localStorage.getItem("groq_key")||""; 
+    return k.replace(/[^\x20-\x7E]/g, '').trim();
+  }catch(e){ return ""; } 
+}
+
+function saveApiKey(){
+  // Clean key — remove non-ASCII chars that break fetch headers
+  const raw = document.getElementById("apiKeyInput").value.trim();
+  const key = raw.replace(/[^\x20-\x7E]/g, '').trim();
+  if(!key) return;
+  try{ localStorage.setItem("groq_key", key); }catch(e){}
+  document.getElementById("apiKeyInput").value = "";
+  const btn = document.getElementById("saveKeyBtn");
+  btn.textContent = "✅ Key Saved!";
+  btn.style.background = "#0f9d58";
+  btn.style.color = "#fff";
+  setTimeout(()=>{
+    btn.textContent = "💾 Save API Key";
+    btn.style.background = "";
+    btn.style.color = "";
+  }, 2000);
+  checkKeyStatus();
+}
+
+function clearApiKey(){
+  try{ localStorage.removeItem("groq_key"); }catch(e){}
+  checkKeyStatus();
+}
+
+function checkKeyStatus(){
+  const hasKey = !!getKey();
+  const card = document.getElementById("keyStatus");
+  const clearBtn = document.getElementById("clearKeyBtn");
+  if(hasKey){
+    card.className = "status-active";
+    card.innerHTML = '<div class="status-icon">🔒</div><div><div class="status-title">API Key Active — Chats Enabled!</div><div class="status-desc">Key saved securely on this device only</div></div>';
+    clearBtn.style.display = "block";
+  } else {
+    card.className = "status-inactive";
+    card.innerHTML = '<div class="status-icon">🔓</div><div><div class="status-title">No API Key — Chats Disabled</div><div class="status-desc">Enter your Groq key below to enable AI chats</div></div>';
+    clearBtn.style.display = "none";
+  }
+}
+
+// PROFILE
+function loadProfile(){
+  try{
+    const p = localStorage.getItem("hub_profile_v2");
+    if(p) document.getElementById("profileText").value = p;
+  }catch(e){}
+}
+function getProfile(){
+  try{ return localStorage.getItem("hub_profile_v2")||"Name: John Lanter, Orange TX. Former Lead Production Operator. Building AI business."; }
+  catch(e){ return "John Lanter, Orange TX"; }
+}
+function saveProfile(){
+  try{ localStorage.setItem("hub_profile_v2", document.getElementById("profileText").value); }catch(e){}
+  const btn = document.getElementById("saveProfileBtn");
+  btn.textContent = "✅ Profile Saved!";
+  btn.style.background = "#0f9d58";
+  btn.style.color = "#fff";
+  setTimeout(()=>{
+    btn.textContent = "💾 Save Profile";
+    btn.style.background = "";
+    btn.style.color = "";
+  }, 2000);
+}
+
+// FILE HANDLING
+function handleFile(tab, input){
+  const f = input.files[0];
+  if(!f) return;
+  fileData[tab] = {name: f.name, text: ""};
+  if(f.name.toLowerCase().endsWith(".pdf")){
+    fileData[tab].text = "[PDF attached: "+f.name+"]";
+  } else {
+    const r = new FileReader();
+    r.onload = e => { fileData[tab].text = e.target.result||""; };
+    r.readAsText(f);
+  }
+}
+
+// MUTE
+function toggleMute(tab){
+  muteState[tab] = !muteState[tab];
+  const btn = document.getElementById("mute-"+tab);
+  if(btn) btn.textContent = muteState[tab] ? "🔇" : "🔊";
+  if(muteState[tab]) stopAudio();
+}
+
+// VOICE SELECTION — Smart Female Auto Detect
+let beckyVoiceMode = 'auto';
+let femaleVoicesList = [];
+
+function isFemaleVoice(voice){
+  const name = voice.name.toLowerCase();
+  // Known female voice names
+  const femaleNames = [
+    'samantha','karen','victoria','moira','tessa','veena','fiona',
+    'google us english','google uk english female',
+    'microsoft zira','microsoft hazel','microsoft susan',
+    'microsoft catherine','microsoft eva','microsoft linda',
+    'alice','amelie','anna','carmen','damayanti','ellen',
+    'ioana','joana','kanya','laura','lekha','luciana',
+    'mariska','mei-jia','melina','milena','monica','nora',
+    'paulina','sara','satu','sin-ji','soledad','tamar',
+    'ting-ting','yuna','zosia','female','woman','girl',
+    'zira','hazel','susan','catherine','eva','linda',
+    'helena','stefanos'
+  ];
+  // Exclude known male voices
+  const maleNames = [
+    'alex','daniel','diego','fred','jorge','juan','lee',
+    'luca','majed','maged','ralph','rishi','thomas','xander',
+    'yannick','microsoft david','microsoft mark','microsoft james',
+    'google uk english male','male','man'
+  ];
+  for(const m of maleNames){
+    if(name.includes(m)) return false;
+  }
+  for(const f of femaleNames){
+    if(name.includes(f)) return true;
+  }
+  // If lang is en and not explicitly male assume female
+  if(voice.lang && voice.lang.startsWith('en')) return true;
+  return false;
+}
+
+function populateVoiceSelector(){
+  const voices = window.speechSynthesis.getVoices();
+  if(voices.length === 0) return;
+  
+  const sel = document.getElementById('beckyVoice');
+  if(!sel) return;
+  
+  // Get female English voices only
+  femaleVoicesList = voices.filter(v => 
+    v.lang && v.lang.startsWith('en') && isFemaleVoice(v)
+  );
+  
+  // Clear and rebuild options
+  sel.innerHTML = '<option value="auto">⭐ Auto — Best Female Voice</option>';
+  femaleVoicesList.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = 'voice_' + i;
+    const flag = v.lang.includes('GB') ? '🇬🇧' : 
+                 v.lang.includes('AU') ? '🇦🇺' : 
+                 v.lang.includes('IN') ? '🇮🇳' : '🇺🇸';
+    opt.textContent = flag + ' ' + v.name;
+    sel.appendChild(opt);
+  });
+  
+  // Restore saved choice
+  try{
+    const saved = localStorage.getItem('becky_voice');
+    if(saved) { sel.value = saved; beckyVoiceMode = saved; }
+  }catch(e){}
+}
+
+function changeBeckyVoice(mode){
+  beckyVoiceMode = mode;
+  try{ localStorage.setItem('becky_voice', mode); }catch(e){}
+}
+
+function loadVoiceChoice(){
+  // Populate selector when voices are ready
+  if(window.speechSynthesis.getVoices().length > 0){
+    populateVoiceSelector();
+  } else {
+    window.speechSynthesis.onvoiceschanged = populateVoiceSelector;
+  }
+}
+
+function getSelectedVoice(){
+  const voices = window.speechSynthesis.getVoices();
+  if(beckyVoiceMode === 'auto' || !beckyVoiceMode.startsWith('voice_')){
+    // Auto pick best female English voice
+    return voices.find(v => v.name === 'Samantha') ||
+           voices.find(v => v.name === 'Google US English') ||
+           voices.find(v => v.name === 'Karen') ||
+           voices.find(v => v.name === 'Moira') ||
+           voices.find(v => v.name === 'Microsoft Zira Desktop') ||
+           voices.find(v => v.lang && v.lang.startsWith('en') && isFemaleVoice(v)) ||
+           voices.find(v => v.lang && v.lang.startsWith('en')) ||
+           voices[0];
+  }
+  // User picked a specific voice
+  const idx = parseInt(beckyVoiceMode.replace('voice_',''));
+  return femaleVoicesList[idx] || voices[0];
+}
+
+// SPEAK — Powered by Puter.js with ElevenLabs Voice ID
+let currentAudio = null;
+
+function cleanText(text){
+  let clean = text.replace(/[#*`]/g, '');
+  clean = clean.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '');
+  clean = clean.replace(/[\u2600-\u27BF]/g, '');
+  clean = clean.replace(/\n+/g, ' ').trim();
+  return clean;
+}
+
+async function speakText(text, tab){
+  if(muteState[tab]) return;
+  const clean = cleanText(text);
+  if(!clean) return;
+
+  // Stop any playing audio first
+  if(currentAudio){ currentAudio.pause(); currentAudio = null; }
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+
+  // BROWSER SPEECH — always reliable
+  if(!window.speechSynthesis) return;
+
+  const u = new SpeechSynthesisUtterance(clean);
+  u.volume = 1.0;
+  u.rate = 1.0;
+  u.pitch = 1.2;
+
+  const trySpeak = () => {
+    const voices = window.speechSynthesis.getVoices();
+    if(voices.length === 0){ setTimeout(trySpeak, 150); return; }
+    const pick = getSelectedVoice();
+    if(pick){
+      u.voice = pick;
+      // Higher pitch for younger female sound
+      if(pick.name.toLowerCase().includes('zira')) u.pitch = 1.3;
+      else if(pick.name.toLowerCase().includes('samantha')) u.pitch = 1.2;
+      else u.pitch = 1.15;
+    }
+    window.speechSynthesis.speak(u);
+  };
+  trySpeak();
+}
+
+// Also update mute to stop Puter audio
+function stopAudio(){
+  if(currentAudio){ currentAudio.pause(); currentAudio = null; }
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+// DAILY MEMORY — Save and load Becky conversations
+function saveToMemory(role, text){
+  try {
+    const today = new Date().toLocaleDateString();
+    const key = 'becky_memory_' + today;
+    let log = [];
+    try { log = JSON.parse(localStorage.getItem(key)||'[]'); } catch(e){}
+    log.push({role, text, time: new Date().toLocaleTimeString()});
+    // Keep last 30 messages per day
+    if(log.length > 30) log = log.slice(-30);
+    localStorage.setItem(key, JSON.stringify(log));
+    // Also save last chat date
+    localStorage.setItem('becky_last_chat', today);
+  } catch(e){}
+}
+
+function loadTodayMemory(){
+  try {
+    const today = new Date().toLocaleDateString();
+    const key = 'becky_memory_' + today;
+    const log = JSON.parse(localStorage.getItem(key)||'[]');
+    if(log.length === 0) return;
+    const container = document.getElementById('msgs-becky');
+    if(!container) return;
+    // Add a divider showing memory loaded
+    const divider = document.createElement('div');
+    divider.style.cssText = 'text-align:center;font-size:10px;color:rgba(245,197,24,0.4);padding:6px;letter-spacing:1px;';
+    divider.textContent = '— Earlier today —';
+    container.appendChild(divider);
+    // Load last 10 messages from today
+    const recent = log.slice(-10);
+    recent.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (m.role==='user' ? 'msg-user' : 'msg-ai');
+      div.innerHTML = m.text.split('\n').join('<br/>');
+      container.appendChild(div);
+    });
+    container.scrollTop = container.scrollHeight;
+  } catch(e){}
+}
+
+// ADD MESSAGE
+function addMsg(tab, role, text){
+  const container = document.getElementById("msgs-"+tab);
+  if(!container) return null;
+  const div = document.createElement("div");
+  div.className = "msg " + (role==="user" ? "msg-user" : role==="thinking" ? "msg-thinking" : "msg-ai");
+  div.innerHTML = text.split("\n").join("<br/>");
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  // Save Becky conversations to daily memory
+  if(tab === 'becky' && role !== 'thinking') saveToMemory(role, text);
+  return div;
+}
+
+// SEND MESSAGE
+async function sendMsg(tab){
+  const input = document.getElementById("input-"+tab);
+  if(!input) return;
+  const text = input.value.trim();
+  const fd = fileData[tab];
+  if(!text && !fd) return;
+
+  const apiKey = getKey();
+  if(!apiKey){
+    addMsg(tab, "ai", "⚠️ No API key! Go to ⚙️ Settings tab and enter your Groq API key.");
+    return;
+  }
+
+  let content = text;
+  if(fd && fd.text) content += "\n\n[File: "+fd.name+"]\n"+fd.text.slice(0,3000);
+  delete fileData[tab];
+  input.value = "";
+
+  addMsg(tab, "user", content);
+  const thinking = addMsg(tab, "thinking", "✨ Thinking...");
+
+  const system = (SYSTEMS[tab]||SYSTEMS.home) + "\n\nUSER CONTEXT: " + getProfile();
+
+  try{
+    // Clean API key — remove any non-ASCII characters
+    const cleanKey = apiKey.replace(/[^ -~]/g, '').trim();
+    const res = await fetch(GROQ_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + cleanKey
+      },
+      body:JSON.stringify({
+        model: MODEL,
+        max_tokens: 800,
+        messages:[{role:"system",content:system},{role:"user",content:content}]
+      })
+    });
+    const data = await res.json();
+    if(thinking) thinking.remove();
+    if(data.choices && data.choices[0]){
+      const reply = data.choices[0].message.content;
+      addMsg(tab, "ai", reply);
+      speakText(reply, tab);
+    } else if(data.error){
+      addMsg(tab, "ai", "❌ "+data.error.message);
+    } else {
+      addMsg(tab, "ai", "❌ Unexpected response. Please try again.");
+    }
+  }catch(e){
+    if(thinking) thinking.remove();
+    addMsg(tab, "ai", "❌ Connection error: "+e.message);
+  }
+}
+
+// ACTORS VIDEO BUILDER
+let selectedActor = null;
+let selectedTopic = null;
+let generatedScript = '';
+
+function selectActor(name){
+  selectedActor = name;
+  ['lisa','alisha','susan','paul'].forEach(a => {
+    const card = document.getElementById('actor-'+a);
+    const badge = document.getElementById('badge-'+a);
+    if(card){
+      card.className = 'actor-card' + (a===name ? ' selected-'+a : '');
+    }
+    if(badge) badge.textContent = a===name ? '✅' : '';
+  });
+  checkActorReady();
+}
+
+function selectTopic(t){
+  selectedTopic = t;
+  ['ainews','affiliate','tips','custom'].forEach(bt => {
+    const btn = document.getElementById('topic-'+bt);
+    if(btn) btn.className = 'topic-btn' + (bt===t ? ' active' : '');
+  });
+  const customWrap = document.getElementById('customTopicWrap');
+  if(customWrap) customWrap.style.display = t==='custom' ? 'block' : 'none';
+  checkActorReady();
+}
+
+function checkActorReady(){
+  const btn = document.getElementById('generateScriptBtn');
+  if(btn) btn.disabled = !(selectedActor && selectedTopic);
+}
+
+const ACTOR_STYLES = {
+  lisa: 'You are writing for LISA — confident, bold, sharp, professional 38 year old female AI news host.',
+  alisha: 'You are writing for ALISHA — warm, engaging, easy to understand female AI news host.',
+  susan: 'You are writing for SUSAN — friendly, relatable female AI news host who starts the week strong.',
+  paul: 'You are writing for PAUL — a man in his 60s with a gravelly grandpa voice but in a toddler body! Mostly serious delivery but naturally funny because of the contrast. Keep it short and punchy!'
+};
+
+const TOPIC_LABELS = {
+  ainews: 'the latest AI news and developments',
+  affiliate: 'affiliate marketing and how to earn money with AI tools',
+  tips: 'practical AI tips and how to guides for beginners',
+  custom: ''
+};
+
+async function generateActorScript(){
+  if(!selectedActor || !selectedTopic) return;
+  const apiKey = getKey();
+  if(!apiKey){
+    alert('Please enter your Groq API key in Settings first!');
+    return;
+  }
+
+  let topic = TOPIC_LABELS[selectedTopic];
+  if(selectedTopic === 'custom'){
+    const input = document.getElementById('customTopicInput');
+    topic = input ? input.value.trim() : '';
+    if(!topic){ alert('Please enter your custom topic!'); return; }
+  }
+
+  const btn = document.getElementById('generateScriptBtn');
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+
+  const scriptOutput = document.getElementById('scriptOutput');
+  const scriptText = document.getElementById('scriptText');
+  if(scriptOutput) scriptOutput.style.display = 'block';
+  if(scriptText) scriptText.textContent = 'Writing your script...';
+
+  // Hide prompts while regenerating
+  const promptsOutput = document.getElementById('promptsOutput');
+  if(promptsOutput) promptsOutput.style.display = 'none';
+
+  const actorName = selectedActor.charAt(0).toUpperCase() + selectedActor.slice(1);
+  const systemPrompt = ACTOR_STYLES[selectedActor] + ' Write a short punchy 30-60 second video script about ' + topic + '. Format: Hook line, 3-4 key points, strong call to action. Keep it energetic and perfect for TikTok and YouTube Shorts. No stage directions. Just the spoken words.';
+
+  try {
+    const cleanKey = apiKey.replace(/[^\x20-\x7E]/g, '').trim();
+    const res = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+cleanKey},
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 600,
+        messages: [
+          {role:'system', content: systemPrompt},
+          {role:'user', content: 'Write a short punchy video script for ' + actorName + ' about: ' + topic}
+        ]
+      })
+    });
+    const data = await res.json();
+    if(data.choices && data.choices[0]){
+      generatedScript = data.choices[0].message.content;
+      if(scriptText) scriptText.textContent = generatedScript;
+    } else {
+      if(scriptText) scriptText.textContent = '❌ Error generating script. Check your API key in Settings.';
+    }
+  } catch(e) {
+    if(scriptText) scriptText.textContent = '❌ Connection error: ' + e.message;
+  }
+
+  btn.textContent = '✨ Generate Script';
+  btn.disabled = false;
+}
+
+function buildVideoPrompts(){
+  if(!generatedScript) return;
+  const sentences = generatedScript.match(/[^.!?]+[.!?]+/g) || [generatedScript];
+  const chunks = [];
+  let current = '';
+  sentences.forEach(s => {
+    if((current + s).length > 150 && current.length > 0){
+      chunks.push(current.trim());
+      current = s;
+    } else {
+      current += ' ' + s;
+    }
+  });
+  if(current.trim()) chunks.push(current.trim());
+
+  const actorName = selectedActor.charAt(0).toUpperCase() + selectedActor.slice(1);
+  const promptsList = document.getElementById('promptsList');
+  const promptsOutput = document.getElementById('promptsOutput');
+
+  if(promptsList){
+    promptsList.innerHTML = '';
+    chunks.forEach((chunk, i) => {
+      const prompt = 'Generate a realistic video clip of ' + actorName + ' speaking: "' + chunk + '" — ' + getActorDescription(selectedActor);
+      const div = document.createElement('div');
+      div.className = 'prompt-item';
+      div.innerHTML = '<div class="prompt-num">SCENE ' + (i+1) + ' of ' + chunks.length + '</div>' + prompt;
+      promptsList.appendChild(div);
+    });
+  }
+  if(promptsOutput) promptsOutput.style.display = 'block';
+  // Scroll to prompts
+  promptsOutput.scrollIntoView({behavior:'smooth'});
+}
+
+function getActorDescription(actor){
+  const desc = {
+    lisa: 'confident professional female news anchor, 38 years old, studio background',
+    alisha: 'warm engaging female news host, modern studio setting',
+    susan: 'friendly relatable female news anchor, bright studio background',
+    paul: 'elderly man in his 60s with grey beard and coveralls but in a toddler sized body, serious expression, gravelly voice'
+  };
+  return desc[actor] || 'professional news anchor';
+}
+
+function sendToExtension(){
+  const items = document.querySelectorAll('#promptsList .prompt-item');
+  const prompts = [];
+  items.forEach(s => {
+    // Get just the prompt text without the SCENE label
+    const clone = s.cloneNode(true);
+    const numEl = clone.querySelector('.prompt-num');
+    if(numEl) numEl.remove();
+    prompts.push(clone.textContent.trim());
+  });
+
+  if(prompts.length === 0){
+    alert('No prompts found! Generate a script and break it into prompts first!');
+    return;
+  }
+
+  const data = {
+    actor: selectedActor,
+    topic: selectedTopic,
+    prompts: prompts,
+    timestamp: new Date().toISOString()
+  };
+
+  // Method 1 — localStorage (works if extension and app on same domain)
+  try {
+    localStorage.setItem('hub_extension_prompts', JSON.stringify(data));
+  } catch(e){}
+
+  // Method 2 — Try chrome.storage if available
+  try {
+    if(window.chrome && chrome.storage && chrome.storage.local){
+      chrome.storage.local.set({ hub_extension_prompts: data }, function(){
+        console.log('Prompts saved to chrome.storage!');
+      });
+    }
+  } catch(e){}
+
+  // Method 3 — Post message for extension to catch
+  try {
+    window.postMessage({ type: 'HUB_ENGINE_PROMPTS', data: data }, '*');
+  } catch(e){}
+
+  // Show success with count
+  const status = document.getElementById('extensionStatus');
+  if(status){
+    status.style.display = 'block';
+    status.innerHTML = '✅ ' + prompts.length + ' prompts sent to Chrome Extension!<br/><span style="font-size:10px;opacity:0.7;">Now click the 🎬 Hub Engine icon in Chrome toolbar → click Refresh Prompts!!</span>';
+  }
+}
+
+// LEARNING LOG
+function getTodayLogKey(){
+  return 'hub_log_' + new Date().toLocaleDateString();
+}
+function loadLog(){
+  try{
+    const entries = JSON.parse(localStorage.getItem(getTodayLogKey())||'[]');
+    renderLog(entries);
+  }catch(e){}
+}
+function saveLog(entries){
+  try{ localStorage.setItem(getTodayLogKey(), JSON.stringify(entries)); }catch(e){}
+}
+function getLogEntries(){
+  try{ return JSON.parse(localStorage.getItem(getTodayLogKey())||'[]'); }catch(e){ return []; }
+}
+function renderLog(entries){
+  const list = document.getElementById('logList');
+  const empty = document.getElementById('logEmpty');
+  if(!list) return;
+  list.innerHTML = '';
+  if(entries.length === 0){
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  entries.forEach((entry, i) => {
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `
+      <div class="log-check ${entry.done?'done':''}" onclick="toggleLogDone(${i})">${entry.done?'✓':''}</div>
+      <div class="log-text ${entry.done?'done':''}">${entry.text}</div>
+      <div class="log-time">${entry.time||''}</div>
+      <div class="log-delete" onclick="deleteLogEntry(${i})">✕</div>`;
+    list.appendChild(div);
+  });
+}
+function addLogEntry(){
+  const input = document.getElementById('logInput');
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text) return;
+  const entries = getLogEntries();
+  entries.unshift({text, done:false, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+  saveLog(entries);
+  renderLog(entries);
+  input.value = '';
+}
+function addQuickLog(text){
+  const entries = getLogEntries();
+  entries.unshift({text, done:false, time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+  saveLog(entries);
+  renderLog(entries);
+}
+function toggleLogDone(i){
+  const entries = getLogEntries();
+  entries[i].done = !entries[i].done;
+  saveLog(entries);
+  renderLog(entries);
+}
+function deleteLogEntry(i){
+  const entries = getLogEntries();
+  entries.splice(i, 1);
+  saveLog(entries);
+  renderLog(entries);
+}
+function clearTodayLog(){
+  saveLog([]);
+  renderLog([]);
+}
+
+// INIT
+window.onload = () => {
+  try{
+    const hasKey = !!localStorage.getItem("groq_key");
+    if(hasKey){
+      document.getElementById("step1").style.display = "none";
+      document.getElementById("step2").style.display = "flex";
+    }
+  }catch(e){}
+};
+</script>
+</body>
+</html>
